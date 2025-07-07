@@ -395,11 +395,31 @@ function createExcelData(selectedBeam) {
         ['Freestanding:', config.freestanding ? 'Yes' : 'No'],
         ['Capped System:', config.capped ? 'Yes' : 'No'],
         [''],
-        ['CALCULATED VALUES'],
-        ['Required ECL (lbs):', currentCalculatedECL?.toLocaleString() || 'N/A'],
+        ['CALCULATION DETAILS'],
+        ['Max Wheel Load (MWL) = Rated + Beam + Hoist/Trolley'],
+        ['MWL (lbs):', results.maxWheelLoad?.toLocaleString() || 'N/A'],
+        ['Wheelbase Span Ratio = A / L:'],
+        ['Wheelbase / SupportCenters:', (config.wheelBase / config.supportCenters).toFixed(3)],
+
+        ['K-Factors from Ratio Lookup'],
         ['K1 Factor:', currentAnalysisResults.kFactors?.k1?.toFixed(3) || 'N/A'],
         ['K2 Factor:', currentAnalysisResults.kFactors?.k2?.toFixed(3) || 'N/A'],
-        ['Max Wheel Load (lbs):', results.maxWheelLoad?.toLocaleString() || 'N/A'],
+
+        ['ECL = K1 * MWL'],
+        ['ECL (lbs):', currentCalculatedECL?.toLocaleString() || 'N/A'],
+
+        ['Column Moment = Lateral Load * Rail Height (inches)'],
+        ['Column Moment (lb-in):', results.columnMoment?.toLocaleString() || 'N/A'],
+        ['Lateral OTM = Column Moment / 12,000'],
+        ['Lateral OTM (kip-ft):', results.lateralOTM?.toFixed(2) || 'N/A'],
+
+        ['Longitudinal Moment = Longitudinal Load * Rail Height (inches)'],
+        ['Foundation Moment (lb-in):', results.foundationMoment?.toLocaleString() || 'N/A'],
+        ['Longitudinal OTM = Foundation Moment / 12,000'],
+        ['Longitudinal OTM (kip-ft):', results.longitudinalOTM?.toFixed(2) || 'N/A'],
+
+        ['Column Load = (Max Vertical Load + 2500) / 1000'],
+        ['Column Load (kips):', results.columnLoad?.toFixed(2) || 'N/A'],
         [''],
         ['STRUCTURAL ANALYSIS RESULTS'],
         ['Lateral Deflection Check:', results.lateralDeflectionPass ? 'PASS' : 'FAIL'],
@@ -413,8 +433,11 @@ function createExcelData(selectedBeam) {
         ['Longitudinal OTM (ft-lbs):', results.longitudinalOTM?.toLocaleString() || 'N/A'],
         ['Max Vertical Load (lbs):', results.maxVerticalLoad?.toLocaleString() || 'N/A'],
         [''],
-        ['BEAM CANDIDATES CONSIDERED'],
-        ['Rank', 'Designation', 'Weight (lbs/ft)', 'Capacity (lbs)', 'Utilization (%)', 'Status']
+        ['STRUCTURAL FORMULAS'],
+        ['Lateral Deflection = (Lateral Load * H^3) / (3 * E * I)'],
+        ['Longitudinal Deflection = (Longitudinal Load * H^3) / (3 * E * I)'],
+        ['Stress = (Lateral Load * H) / S'],
+        ['Axial Unity = (Axial Load / 24000) + (Effective Length / 43.2)']
     ];
 
     // Add beam candidates
