@@ -6,6 +6,7 @@ let currentCalculatedECL = 0;
 let selectedBeamIndex = 0;
 let currentConfiguration = {};
 let currentAnalysisResults = {};
+let currentSavedAnalysisId = null;
 
 /**
  * Display the beam candidates table with top 5 options
@@ -21,6 +22,61 @@ function displayBeamCandidates(candidates, requiredECL) {
     }
 
     let tableHTML = `
+        <style>
+            .beam-candidates-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                font-size: 0.85rem;
+            }
+            .beam-candidates-table th {
+                background: #f7fafc;
+                padding: 8px 6px;
+                text-align: left;
+                border-bottom: 2px solid #e2e8f0;
+                font-weight: 600;
+                color: #4a5568;
+                font-size: 0.75rem;
+            }
+            .beam-candidates-table td {
+                padding: 8px 6px;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .beam-row {
+                transition: background-color 0.2s;
+            }
+            .beam-row:hover {
+                background: #f0fdf4;
+            }
+            .beam-row.selected {
+                background: #eff6ff;
+                border-left: 3px solid #3b82f6;
+            }
+            .beam-select-btn {
+                padding: 4px 8px;
+                border: 1px solid #d1d5db;
+                border-radius: 4px;
+                background: #f9fafb;
+                color: #374151;
+                font-size: 0.7rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .beam-select-btn:hover {
+                background: #4caf50;
+                color: white;
+                border-color: #4caf50;
+            }
+            .beam-select-btn.selected {
+                background: #3b82f6;
+                color: white;
+                border-color: #3b82f6;
+                cursor: default;
+            }
+            .utilization-high { color: #dc2626; font-weight: 600; }
+            .utilization-medium { color: #ea580c; font-weight: 600; }
+            .utilization-low { color: #16a34a; font-weight: 600; }
+        </style>
         <table class="beam-candidates-table">
             <thead>
                 <tr>
@@ -38,7 +94,6 @@ function displayBeamCandidates(candidates, requiredECL) {
 
     candidates.forEach((beam, index) => {
         const utilizationClass = getUtilizationClass(beam.utilization);
-        // FIX: Only the selectedBeamIndex should be marked as selected, not beam.isSelected
         const isSelected = index === selectedBeamIndex;
 
         tableHTML += `
@@ -108,7 +163,6 @@ async function selectBeamAndAnalyze(index) {
         currentConfiguration = config;
 
         // Perform a NEW analysis with the same configuration
-        // This will simulate analyzing with the selected beam
         const startTime = Date.now();
 
         const response = await fetch(`${API_BASE}/analyze`, {
@@ -126,7 +180,6 @@ async function selectBeamAndAnalyze(index) {
 
         // Override the results to show our selected beam
         if (data.results) {
-            // Replace the selected beam info with our manually selected beam
             data.results.selectedBeam = {
                 designation: selectedBeam.designation,
                 weight: selectedBeam.weight,
@@ -150,6 +203,10 @@ async function selectBeamAndAnalyze(index) {
 
         showSuccess(`✅ Analysis completed with selected beam: ${selectedBeam.designation} (${selectedBeam.utilization.toFixed(1)}% utilized)`);
 
+        // Clear saved status since this is a new analysis variant
+        hideSavedIndicator();
+        currentSavedAnalysisId = null;
+
     } catch (error) {
         hideLoading();
         showError(`❌ Error analyzing with selected beam: ${error.message}`);
@@ -164,9 +221,6 @@ function displayResultsWithSelectedBeam(data, metadata, clientTime, selectedBeam
     document.getElementById('calculatedECL').textContent = `${data.calculatedECL?.toLocaleString() || 'N/A'} lbs`;
     document.getElementById('k1FactorDisplay').textContent = data.kFactors?.k1?.toFixed(3) || '-';
     document.getElementById('k2FactorDisplay').textContent = data.kFactors?.k2?.toFixed(3) || '-';
-
-    // Keep the beam candidates table (already updated by updateBeamSelection)
-    // Don't call displayBeamCandidates again as it would reset selectedBeamIndex
 
     // Update selected beam information with our manually selected beam
     document.getElementById('beamDesignation').textContent = selectedBeam.designation;
@@ -204,6 +258,7 @@ function displayResultsWithSelectedBeam(data, metadata, clientTime, selectedBeam
 
         const note = document.createElement('div');
         note.className = 'selection-note';
+        note.style.cssText = 'margin-top: 10px; padding: 8px; background: #e0f2fe; border-radius: 6px; font-size: 0.8rem; color: #0369a1;';
         note.innerHTML = `<strong>Manual Selection:</strong> Beam manually selected from candidates. Capacity: ${selectedBeam.capacity.toLocaleString()} lbs, Utilization: ${selectedBeam.utilization.toFixed(1)}%`;
         selectedBeamCard.appendChild(note);
     }
@@ -248,19 +303,10 @@ function updateBeamSelection() {
 }
 
 /**
- * Update the selected beam display with the chosen beam (used for export data)
- */
-function updateSelectedBeamDisplay(selectedBeam) {
-    // This function is now mainly used to ensure export data is current
-    // The actual display is handled by displayResultsWithSelectedBeam
-    console.log(`Updated display for selected beam: ${selectedBeam.designation}`);
-}
-
-/**
  * Enhanced results display function
  */
 function displayResults(data, metadata, clientTime) {
-    // Store the analysis results for export
+    // Store the analysis results for export and saving
     currentAnalysisResults = {
         ...data,
         metadata: metadata,
@@ -326,7 +372,63 @@ function displayResults(data, metadata, clientTime) {
 }
 
 /**
- * Export beam analysis results to Excel
+ * Save current analysis to database with enhanced metadata
+ */
+async function saveCurrentAnalysis(projectName, notes = '') {
+    if (!currentAnalysisResults || !currentBeamCandidates || currentBeamCandidates.length === 0) {
+        throw new Error('No analysis results to save');
+    }
+
+    if (!API_BASE) {
+        throw new Error('API endpoint not available');
+    }
+
+    const selectedBeam = currentBeamCandidates[selectedBeamIndex] || currentBeamCandidates[0];
+
+    // Prepare comprehensive save data
+    const saveData = {
+        projectName: projectName,
+        userId: 1, // Default user ID - you can enhance this with user authentication
+        notes: notes,
+        configuration: {
+            ...currentConfiguration,
+            // Add metadata about the analysis
+            analysisType: 'beam_sizing',
+            selectedBeamIndex: selectedBeamIndex,
+            manuallySelected: !!currentAnalysisResults.manuallySelectedBeam,
+            originalAnalysisDate: currentAnalysisResults.analysisDate
+        },
+        // Include the full analysis results
+        analysisResults: {
+            ...currentAnalysisResults,
+            selectedBeamInfo: {
+                ...selectedBeam,
+                wasManuallySelected: !!currentAnalysisResults.manuallySelectedBeam
+            },
+            saveMetadata: {
+                savedAt: new Date().toISOString(),
+                beamCandidatesCount: currentBeamCandidates.length,
+                selectedBeamRank: selectedBeamIndex + 1
+            }
+        }
+    };
+
+    const response = await fetch(`${API_BASE}/analyze-and-save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saveData)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Save failed (${response.status}): ${errorData}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * Export beam analysis results to Excel with enhanced data
  */
 function exportResults() {
     if (!currentAnalysisResults || !currentBeamCandidates || currentBeamCandidates.length === 0) {
@@ -344,18 +446,22 @@ function exportResults() {
         // Convert to CSV format (simplified Excel export)
         const csvContent = convertToCSV(excelData);
 
+        // Create filename with timestamp
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `beam-analysis-${selectedBeam.designation.replace(/\W/g, '_')}-${timestamp}.csv`;
+
         // Create and download file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', `beam-analysis-${selectedBeam.designation}-${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        showSuccess(`✅ Analysis exported successfully for beam ${selectedBeam.designation}`);
+        showSuccess(`✅ Analysis exported successfully as ${filename}`);
 
     } catch (error) {
         showError(`❌ Export failed: ${error.message}`);
@@ -364,15 +470,22 @@ function exportResults() {
 }
 
 /**
- * Create structured data for Excel export
+ * Create structured data for Excel export with comprehensive information
  */
 function createExcelData(selectedBeam) {
     const config = currentConfiguration;
     const results = currentAnalysisResults.results || {};
+    const isFromDatabase = currentAnalysisResults.loadedFromSave;
+    const wasManuallSelected = !!currentAnalysisResults.manuallySelectedBeam;
 
     const data = [
         ['BEAM ANALYSIS REPORT'],
         ['Generated:', new Date().toLocaleString()],
+        ['Report Type:', isFromDatabase ? 'Loaded from Database' : 'Fresh Analysis'],
+        [''],
+        ['PROJECT INFORMATION'],
+        ['Analysis ID:', currentSavedAnalysisId || 'Not Saved'],
+        ['Analysis Date:', currentAnalysisResults.analysisDate ? new Date(currentAnalysisResults.analysisDate).toLocaleString() : 'N/A'],
         [''],
         ['SELECTED BEAM INFORMATION'],
         ['Designation:', selectedBeam.designation],
@@ -380,6 +493,8 @@ function createExcelData(selectedBeam) {
         ['Depth (in):', selectedBeam.depth?.toFixed(1) || 'N/A'],
         ['Capacity (lbs):', selectedBeam.capacity?.toLocaleString() || 'N/A'],
         ['Utilization (%):', selectedBeam.utilization?.toFixed(1) || 'N/A'],
+        ['Selection Method:', wasManuallSelected ? 'Manually Selected' : 'Automatically Selected'],
+        ['Candidate Rank:', (selectedBeamIndex + 1)],
         [''],
         ['CONFIGURATION PARAMETERS'],
         ['Rated Capacity (lbs):', config.ratedCapacity?.toLocaleString() || 'N/A'],
@@ -390,36 +505,27 @@ function createExcelData(selectedBeam) {
         ['Rail Height (in):', config.railHeight || 'N/A'],
         ['Wheel Base (ft):', config.wheelBase || 'N/A'],
         ['Support Centers (ft):', config.supportCenters || 'N/A'],
-        ['Support Centers (ft):', config.supportCenters || 'N/A'],
+        ['Hoist Speed (fpm):', config.hoistSpeed || 'N/A'],
         ['Number of Columns:', config.numCols || 'N/A'],
         ['Freestanding:', config.freestanding ? 'Yes' : 'No'],
         ['Capped System:', config.capped ? 'Yes' : 'No'],
         [''],
         ['CALCULATION DETAILS'],
-        ['Max Wheel Load (MWL) = Rated + Beam + Hoist/Trolley'],
+        ['Max Wheel Load Calculation:'],
+        ['MWL = (Rated + Hoist/Trolley + Girder + Panel + EndTruck) / 2'],
         ['MWL (lbs):', results.maxWheelLoad?.toLocaleString() || 'N/A'],
-        ['Wheelbase Span Ratio = A / L:'],
-        ['Wheelbase / SupportCenters:', (config.wheelBase / config.supportCenters).toFixed(3)],
-
-        ['K-Factors from Ratio Lookup'],
+        [''],
+        ['Wheelbase to Span Ratio:'],
+        ['Ratio = Wheelbase / Support Centers'],
+        ['Wheelbase/Support Centers:', config.wheelBase && config.supportCenters ? (config.wheelBase / config.supportCenters).toFixed(3) : 'N/A'],
+        [''],
+        ['K-Factors (from lookup table):'],
         ['K1 Factor:', currentAnalysisResults.kFactors?.k1?.toFixed(3) || 'N/A'],
         ['K2 Factor:', currentAnalysisResults.kFactors?.k2?.toFixed(3) || 'N/A'],
-
-        ['ECL = K1 * MWL'],
+        [''],
+        ['Equivalent Concentrated Load:'],
+        ['ECL = K1 × MWL'],
         ['ECL (lbs):', currentCalculatedECL?.toLocaleString() || 'N/A'],
-
-        ['Column Moment = Lateral Load * Rail Height (inches)'],
-        ['Column Moment (lb-in):', results.columnMoment?.toLocaleString() || 'N/A'],
-        ['Lateral OTM = Column Moment / 12,000'],
-        ['Lateral OTM (kip-ft):', results.lateralOTM?.toFixed(2) || 'N/A'],
-
-        ['Longitudinal Moment = Longitudinal Load * Rail Height (inches)'],
-        ['Foundation Moment (lb-in):', results.foundationMoment?.toLocaleString() || 'N/A'],
-        ['Longitudinal OTM = Foundation Moment / 12,000'],
-        ['Longitudinal OTM (kip-ft):', results.longitudinalOTM?.toFixed(2) || 'N/A'],
-
-        ['Column Load = (Max Vertical Load + 2500) / 1000'],
-        ['Column Load (kips):', results.columnLoad?.toFixed(2) || 'N/A'],
         [''],
         ['STRUCTURAL ANALYSIS RESULTS'],
         ['Lateral Deflection Check:', results.lateralDeflectionPass ? 'PASS' : 'FAIL'],
@@ -433,11 +539,14 @@ function createExcelData(selectedBeam) {
         ['Longitudinal OTM (ft-lbs):', results.longitudinalOTM?.toLocaleString() || 'N/A'],
         ['Max Vertical Load (lbs):', results.maxVerticalLoad?.toLocaleString() || 'N/A'],
         [''],
-        ['STRUCTURAL FORMULAS'],
-        ['Lateral Deflection = (Lateral Load * H^3) / (3 * E * I)'],
-        ['Longitudinal Deflection = (Longitudinal Load * H^3) / (3 * E * I)'],
-        ['Stress = (Lateral Load * H) / S'],
-        ['Axial Unity = (Axial Load / 24000) + (Effective Length / 43.2)']
+        ['PERFORMANCE METRICS'],
+        ['Processing Time:', currentAnalysisResults.metadata?.processingTimeMs ?
+            `${currentAnalysisResults.metadata.processingTimeMs.toFixed(1)}ms (Server)` : 'N/A'],
+        ['Client Time:', currentAnalysisResults.clientTime ? `${currentAnalysisResults.clientTime}ms` : 'N/A'],
+        ['From Cache:', currentAnalysisResults.metadata?.cached ? 'Yes' : 'No'],
+        [''],
+        ['BEAM CANDIDATES SUMMARY'],
+        ['Rank', 'Designation', 'Weight (lbs/ft)', 'Capacity (lbs)', 'Utilization (%)', 'Status']
     ];
 
     // Add beam candidates
@@ -452,16 +561,26 @@ function createExcelData(selectedBeam) {
         ]);
     });
 
+    // Add formulas reference
+    data.push(['']);
+    data.push(['STRUCTURAL FORMULAS REFERENCE']);
+    data.push(['Lateral Deflection = (Lateral Load × Height³) / (3 × E × I)']);
+    data.push(['Longitudinal Deflection = (Longitudinal Load × Height³) / (3 × E × I)']);
+    data.push(['Stress = (Lateral Load × Height) / Section Modulus']);
+    data.push(['Column Load = (Max Vertical Load + 2500) / 1000']);
+    data.push(['Lateral OTM = (Column Moment) / 12,000']);
+    data.push(['Longitudinal OTM = (Foundation Moment) / 12,000']);
+
     return data;
 }
 
 /**
- * Convert data array to CSV format
+ * Convert data array to CSV format with proper escaping
  */
 function convertToCSV(data) {
     return data.map(row =>
         row.map(cell => {
-            // Handle cells that might contain commas or quotes
+            // Handle cells that might contain commas, quotes, or newlines
             const cellStr = String(cell || '');
             if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
                 return '"' + cellStr.replace(/"/g, '""') + '"';
@@ -508,9 +627,8 @@ async function getBeamOptions() {
  * Calculate max wheel load from configuration
  */
 function calculateMaxWheelLoad(config) {
-    // This is a simplified calculation - you may need to adjust based on your BeamSizerConfig logic
     const totalWeight = config.ratedCapacity + config.weightHoistTrolley + config.girderWeight + config.panelWeight + config.endTruckWeight;
-    return totalWeight / 2; // Simplified - adjust as needed
+    return totalWeight / 2; // Simplified - adjust as needed based on your calculation logic
 }
 
 /**
@@ -533,18 +651,87 @@ async function getKFactors(config) {
 }
 
 /**
- * Initialize beam calculator features
+ * Initialize beam calculator features with enhanced functionality
  */
 function initializeBeamCalculator() {
-    console.log('🏗️ Initializing beam calculator features...');
+    console.log('🏗️ Initializing beam calculator with save/load features...');
 
     // Add keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'e') {
-            e.preventDefault();
-            exportResults();
+        if (e.ctrlKey || e.metaKey) {
+            switch (e.key.toLowerCase()) {
+                case 's':
+                    e.preventDefault();
+                    if (typeof showSaveDialog === 'function') {
+                        showSaveDialog();
+                    }
+                    break;
+                case 'o':
+                    e.preventDefault();
+                    if (typeof showLoadDialog === 'function') {
+                        showLoadDialog();
+                    }
+                    break;
+                case 'e':
+                    e.preventDefault();
+                    exportResults();
+                    break;
+            }
         }
     });
+
+    // Initialize auto-save prompt for long analyses
+    let analysisStartTime = null;
+
+    // Hook into analyze function to track timing
+    const originalAnalyze = window.analyze;
+    if (originalAnalyze) {
+        window.analyze = function () {
+            analysisStartTime = Date.now();
+            return originalAnalyze.apply(this, arguments);
+        };
+    }
+
+    // Prompt to save after successful long analyses
+    const originalShowSuccess = window.showSuccess;
+    if (originalShowSuccess) {
+        window.showSuccess = function (message) {
+            const result = originalShowSuccess.apply(this, arguments);
+
+            if (analysisStartTime && (Date.now() - analysisStartTime) > 5000) {
+                setTimeout(() => {
+                    if (currentAnalysisResults && !currentSavedAnalysisId) {
+                        if (confirm('This analysis took a while to complete. Would you like to save it for future reference?')) {
+                            if (typeof showSaveDialog === 'function') {
+                                showSaveDialog();
+                            }
+                        }
+                    }
+                }, 2000);
+            }
+
+            return result;
+        };
+    }
+
+    console.log('✅ Enhanced beam calculator features initialized');
+}
+
+/**
+ * Utility function to get status HTML
+ */
+function getStatus(passed, text = null) {
+    const statusText = text || (passed ? 'PASS' : 'FAIL');
+    const className = passed ? 'status-pass' : 'status-fail';
+    return `<span class="${className}">${statusText}</span>`;
+}
+
+/**
+ * Update the selected beam display (used for maintaining UI consistency)
+ */
+function updateSelectedBeamDisplay(selectedBeam) {
+    console.log(`Updated display for selected beam: ${selectedBeam.designation}`);
+    // This function maintains compatibility with existing code
 }
 
 // Initialize when DOM is loaded

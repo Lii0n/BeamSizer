@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beam Calculator - Windows Edition</title>
 
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="/css/beam-calculator.css">
-
     <style>
         * {
             margin: 0;
@@ -100,8 +97,7 @@
                 font-size: 0.85rem;
             }
 
-            .form-group input,
-            .form-group select {
+            .form-group input, .form-group select {
                 padding: 8px 10px;
                 border: 2px solid #e2e8f0;
                 border-radius: 6px;
@@ -109,8 +105,7 @@
                 transition: border-color 0.2s;
             }
 
-                .form-group input:focus,
-                .form-group select:focus {
+                .form-group input:focus, .form-group select:focus {
                     outline: none;
                     border-color: #4caf50;
                 }
@@ -155,6 +150,24 @@
 
             .btn-secondary:hover {
                 background: #cbd5e0;
+            }
+
+        .btn-save {
+            background: #3b82f6;
+            color: white;
+        }
+
+            .btn-save:hover {
+                background: #2563eb;
+            }
+
+        .btn-load {
+            background: #8b5cf6;
+            color: white;
+        }
+
+            .btn-load:hover {
+                background: #7c3aed;
             }
 
         .btn-export {
@@ -273,25 +286,6 @@
             font-weight: 600;
         }
 
-        .performance-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4caf50;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s;
-        }
-
-            .performance-indicator.show {
-                transform: translateX(0);
-            }
-
         .status-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -318,6 +312,117 @@
                 font-size: 0.85rem;
             }
 
+        .performance-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+
+            .performance-indicator.show {
+                transform: translateX(0);
+            }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e8f5e8;
+            padding-bottom: 10px;
+        }
+
+            .modal-header h3 {
+                color: #2d5a2d;
+                margin: 0;
+                font-size: 1.3rem;
+            }
+
+        .close {
+            color: #999;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+            .close:hover {
+                color: #333;
+            }
+
+        .modal-form-group {
+            margin-bottom: 15px;
+        }
+
+            .modal-form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 600;
+                color: #4a5568;
+            }
+
+            .modal-form-group input, .modal-form-group textarea {
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 0.9rem;
+                transition: border-color 0.2s;
+            }
+
+                .modal-form-group input:focus, .modal-form-group textarea:focus {
+                    outline: none;
+                    border-color: #4caf50;
+                }
+
+            .modal-form-group textarea {
+                height: 80px;
+                resize: vertical;
+            }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
         @media (max-width: 768px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -330,6 +435,85 @@
             .buttons {
                 flex-direction: column;
             }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Beam candidates table styles */
+        .beam-candidates-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+            .beam-candidates-table th {
+                background: #f7fafc;
+                padding: 8px 6px;
+                text-align: left;
+                border-bottom: 2px solid #e2e8f0;
+                font-weight: 600;
+                color: #4a5568;
+                font-size: 0.75rem;
+            }
+
+            .beam-candidates-table td {
+                padding: 8px 6px;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+        .beam-row {
+            transition: background-color 0.2s;
+        }
+
+            .beam-row:hover {
+                background: #f0fdf4;
+            }
+
+            .beam-row.selected {
+                background: #eff6ff;
+                border-left: 3px solid #3b82f6;
+            }
+
+        .beam-select-btn {
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #f9fafb;
+            color: #374151;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .beam-select-btn:hover {
+                background: #4caf50;
+                color: white;
+                border-color: #4caf50;
+            }
+
+            .beam-select-btn.selected {
+                background: #3b82f6;
+                color: white;
+                border-color: #3b82f6;
+                cursor: default;
+            }
+
+        .utilization-high {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .utilization-medium {
+            color: #ea580c;
+            font-weight: 600;
+        }
+
+        .utilization-low {
+            color: #16a34a;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -363,6 +547,10 @@
                 <div class="status-item">
                     <div class="label">Cache</div>
                     <div class="value" id="cacheStatus">Active</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Saved Projects</div>
+                    <div class="value" id="savedCount">-</div>
                 </div>
             </div>
         </div>
@@ -439,6 +627,8 @@
                 <div class="buttons">
                     <button class="btn btn-secondary" onclick="validateConfig()">✓ Validate</button>
                     <button class="btn btn-primary" onclick="analyze()">📊 Analyze</button>
+                    <button class="btn btn-save" onclick="showSaveDialog()">💾 Save Analysis</button>
+                    <button class="btn btn-load" onclick="showLoadDialog()">📂 Load Analysis</button>
                     <button class="btn btn-secondary" onclick="clearCache()">🗑️ Clear Cache</button>
                     <button class="btn btn-export" onclick="exportResults()">📋 Export to Excel</button>
                 </div>
@@ -501,7 +691,7 @@
                         </div>
                     </div>
 
-                    <div class="result-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="result-grid">
                         <div class="result-card">
                             <h3>⚖️ Load Analysis</h3>
                             <div class="result-item">
@@ -541,9 +731,12 @@
                                 <span class="result-value" id="overallStatus">-</span>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="result-card">
-                            <h3>🏗️ Foundation Loads</h3>
+                    <!-- Foundation Loads -->
+                    <div class="result-card" style="margin-top: 15px; border-left: 4px solid #f59e0b;">
+                        <h3>🏗️ Foundation Loads</h3>
+                        <div class="result-grid">
                             <div class="result-item">
                                 <span class="result-label">Column Load:</span>
                                 <span class="result-value" id="columnLoad">-</span>
@@ -567,36 +760,69 @@
         </div>
     </div>
 
-    <!-- Load separate JavaScript files -->
-    <script src="/js/beam-calculator.js"></script>
+    <!-- Save Modal -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💾 Save Analysis</h3>
+                <span class="close" onclick="closeSaveDialog()">&times;</span>
+            </div>
+            <div class="modal-form-group">
+                <label for="saveProjectName">Project Name*</label>
+                <input type="text" id="saveProjectName" placeholder="Enter project name...">
+            </div>
+            <div class="modal-form-group">
+                <label for="saveNotes">Notes</label>
+                <textarea id="saveNotes" placeholder="Optional notes..."></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSaveDialog()">Cancel</button>
+                <button class="btn btn-save" onclick="saveAnalysis()">💾 Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Modal -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📂 Load Analysis</h3>
+                <span class="close" onclick="closeLoadDialog()">&times;</span>
+            </div>
+            <div id="analysesList">Loading...</div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeLoadDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Core application JavaScript (keeping the essential functions inline for now)
-        const POSSIBLE_ENDPOINTS = [
-            '/api/beamsizing',
-            '/api/BeamSizing',
-            '/api/beam'
-        ];
+        // Global variables
+        const POSSIBLE_ENDPOINTS = ['/api/beamsizing', '/api/BeamSizing', '/api/beam'];
+        let API_BASE = '/api/beamsizing'; // Default to the correct endpoint
+        let currentAnalysisResults = {};
+        let currentConfiguration = {};
+        let currentBeamCandidates = [];
+        let selectedBeamIndex = 0;
+        let currentCalculatedECL = 0;
 
-        let API_BASE = null;
-        let systemInfoLoaded = false;
-
+        // Find working API endpoint
         async function findWorkingEndpoint() {
             for (const endpoint of POSSIBLE_ENDPOINTS) {
                 try {
-                    console.log(`Testing endpoint: ${endpoint}/health`);
                     const response = await fetch(`${endpoint}/health`);
                     if (response.ok) {
-                        console.log(`✅ Found working endpoint: ${endpoint}`);
                         API_BASE = endpoint;
                         return true;
                     }
                 } catch (error) {
-                    console.log(`❌ Endpoint ${endpoint} failed:`, error.message);
+                    console.log(`Endpoint ${endpoint} failed:`, error.message);
                 }
             }
             return false;
         }
 
+        // Utility functions
         function showPerformanceIndicator(text) {
             const indicator = document.getElementById('performanceIndicator');
             indicator.textContent = text;
@@ -607,40 +833,10 @@
             document.getElementById('performanceIndicator').classList.remove('show');
         }
 
-        function getFormData() {
-            return {
-                ratedCapacity: parseFloat(document.getElementById('ratedCapacity').value),
-                weightHoistTrolley: parseFloat(document.getElementById('weightHoistTrolley').value),
-                girderWeight: parseFloat(document.getElementById('girderWeight').value),
-                panelWeight: parseFloat(document.getElementById('panelWeight').value),
-                endTruckWeight: parseFloat(document.getElementById('endTruckWeight').value),
-                numCols: parseInt(document.getElementById('numCols').value),
-                railHeight: parseFloat(document.getElementById('railHeight').value),
-                wheelBase: parseFloat(document.getElementById('wheelBase').value),
-                supportCenters: parseFloat(document.getElementById('supportCenters').value),
-                freestanding: document.getElementById('freestanding').checked,
-                capped: document.getElementById('capped').checked,
-                hoistSpeed: parseFloat(document.getElementById('hoistSpeed').value)
-            };
-        }
-
-        function showLoading() {
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('results').style.display = 'none';
-            hideMessages();
-            showPerformanceIndicator('Processing on Windows...');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').classList.remove('show');
-            hidePerformanceIndicator();
-        }
-
         function showError(message) {
             const errorDiv = document.getElementById('errorMsg');
             errorDiv.textContent = message;
             errorDiv.className = 'message error';
-            hideLoading();
         }
 
         function showSuccess(message) {
@@ -654,29 +850,37 @@
             document.getElementById('successMsg').style.display = 'none';
         }
 
-        async function loadSystemInfo() {
-            if (systemInfoLoaded || !API_BASE) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/system-info`);
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('platform').textContent = data.platform || 'Windows';
-                    document.getElementById('status').textContent = 'Online';
-                    document.getElementById('memory').textContent = data.totalMemory ?
-                        `${Math.round(data.totalMemory / 1024 / 1024)}MB` : 'Unknown';
-                    systemInfoLoaded = true;
-                }
-            } catch (error) {
-                console.warn('Could not load system info:', error);
-                document.getElementById('platform').textContent = 'Windows';
-                document.getElementById('status').textContent = 'Unknown';
-            }
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('results').style.display = 'none';
+            hideMessages();
         }
 
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function getFormData() {
+            return {
+                ratedCapacity: parseFloat(document.getElementById('ratedCapacity').value) || 0,
+                weightHoistTrolley: parseFloat(document.getElementById('weightHoistTrolley').value) || 0,
+                girderWeight: parseFloat(document.getElementById('girderWeight').value) || 0,
+                panelWeight: parseFloat(document.getElementById('panelWeight').value) || 0,
+                endTruckWeight: parseFloat(document.getElementById('endTruckWeight').value) || 0,
+                numCols: parseInt(document.getElementById('numCols').value) || 0,
+                railHeight: parseFloat(document.getElementById('railHeight').value) || 0,
+                wheelBase: parseFloat(document.getElementById('wheelBase').value) || 0,
+                supportCenters: parseFloat(document.getElementById('supportCenters').value) || 0,
+                freestanding: document.getElementById('freestanding').checked,
+                capped: document.getElementById('capped').checked,
+                hoistSpeed: parseFloat(document.getElementById('hoistSpeed').value) || 0
+            };
+        }
+
+        // Main functions
         async function validateConfig() {
             if (!API_BASE) {
-                showError('❌ API endpoint not available. Check the console for details.');
+                showError('API not available');
                 return;
             }
 
@@ -689,33 +893,192 @@
                     body: JSON.stringify(config)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Validation failed: ${response.status}`);
-                }
-
                 const result = await response.json();
                 hideLoading();
 
                 if (result.isValid) {
-                    showSuccess('✅ Configuration is valid for Windows analysis!');
+                    showSuccess('✅ Configuration is valid');
                 } else {
-                    showError(`❌ Validation failed: ${result.error || 'Unknown error'}`);
+                    showError('❌ Invalid configuration');
                 }
             } catch (error) {
                 hideLoading();
-                showError(`❌ Validation error: ${error.message}`);
+                showError('❌ Validation failed');
             }
         }
 
         async function analyze() {
             if (!API_BASE) {
-                showError('❌ API endpoint not available. Check the console for details.');
+                showError('API not available');
                 return;
             }
 
             showLoading();
             try {
                 const config = getFormData();
+                currentConfiguration = config;
+
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+                currentAnalysisResults = data;
+
+                hideLoading();
+                displayResults(data, data.metadata || {}, 0);
+                showSuccess('✅ Analysis completed');
+            } catch (error) {
+                hideLoading();
+                showError('❌ Analysis failed');
+            }
+        }
+
+        function displayResults(data, metadata, clientTime) {
+            // Store the analysis results
+            currentAnalysisResults = data;
+            currentConfiguration = getFormData();
+            selectedBeamIndex = 0;
+
+            // Display calculated ECL and K-factors
+            document.getElementById('calculatedECL').textContent = `${data.calculatedECL?.toLocaleString() || 'N/A'} lbs`;
+            document.getElementById('k1FactorDisplay').textContent = data.kFactors?.k1?.toFixed(3) || '-';
+            document.getElementById('k2FactorDisplay').textContent = data.kFactors?.k2?.toFixed(3) || '-';
+
+            // Display beam candidates table
+            displayBeamCandidates(data.beamCandidates || [], data.calculatedECL || 0);
+
+            // Update selected beam information
+            const results = data.results;
+            if (results) {
+                document.getElementById('beamDesignation').textContent = results.selectedBeam?.designation || 'None';
+                document.getElementById('beamWeight').textContent = results.selectedBeam ?
+                    `${results.selectedBeam.weight.toFixed(1)} lbs/ft` : '-';
+
+                // Update load calculations
+                document.getElementById('maxWheelLoad').textContent = `${results.maxWheelLoad?.toLocaleString() || 0} lbs`;
+                document.getElementById('ecl').textContent = `${(data.calculatedECL || 0).toLocaleString()} lbs`;
+                document.getElementById('k1Factor').textContent = data.kFactors?.k1?.toFixed(3) || '-';
+                document.getElementById('k2Factor').textContent = data.kFactors?.k2?.toFixed(3) || '-';
+
+                // Update structural checks
+                document.getElementById('lateralCheck').innerHTML = getStatus(results.lateralDeflectionPass);
+                document.getElementById('longitudinalCheck').innerHTML = getStatus(results.longitudinalDeflectionPass);
+                document.getElementById('stressCheck').innerHTML = getStatus(results.stressCheckPass);
+                document.getElementById('overallStatus').innerHTML = getStatus(results.overallPass,
+                    results.overallPass ? 'ACCEPTABLE' : 'INADEQUATE');
+
+                // Update foundation loads - fix columnLoad mapping
+                const columnLoadKips = results.columnLoadFoundation || 0;
+                const columnLoadLbs = columnLoadKips * 1000; // Convert from kips to lbs
+                document.getElementById('columnLoad').textContent = `${columnLoadLbs.toLocaleString()} lbs`;
+                document.getElementById('lateralOTM').textContent = `${results.lateralOTM?.toLocaleString() || 0} ft-lbs`;
+                document.getElementById('longitudinalOTM').textContent = `${results.longitudinalOTM?.toLocaleString() || 0} ft-lbs`;
+                document.getElementById('maxVerticalLoad').textContent = `${results.maxVerticalLoad?.toLocaleString() || 0} lbs`;
+            }
+
+            // Display performance information
+            document.getElementById('processingTime').textContent = metadata?.processingTimeMs ?
+                `${metadata.processingTimeMs.toFixed(1)}ms (Server) + ${clientTime}ms (Client)` : `${clientTime}ms`;
+            document.getElementById('fromCache').textContent = metadata?.cached ? 'Yes' : 'No';
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function displayBeamCandidates(candidates, requiredECL) {
+            const container = document.getElementById('beamCandidatesTable');
+            currentBeamCandidates = candidates;
+            currentCalculatedECL = requiredECL;
+
+            if (!candidates || candidates.length === 0) {
+                container.innerHTML = '<p style="color: #ef4444; font-style: italic;">No adequate beams found for the given requirements.</p>';
+                return;
+            }
+
+            let tableHTML = `
+                    <table class="beam-candidates-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Designation</th>
+                                <th>Weight<br>(lbs/ft)</th>
+                                <th>Capacity<br>(lbs)</th>
+                                <th>Utilization</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+            candidates.forEach((beam, index) => {
+                const utilizationClass = getUtilizationClass(beam.utilization);
+                const isSelected = index === selectedBeamIndex;
+
+                tableHTML += `
+                        <tr class="beam-row ${isSelected ? 'selected' : ''}" data-beam-index="${index}">
+                            <td style="font-weight: 600;">${index + 1}</td>
+                            <td style="font-weight: 600; color: #1e40af;">${beam.designation}</td>
+                            <td>${beam.weight?.toFixed(1) || 'N/A'}</td>
+                            <td>${beam.capacity?.toLocaleString() || 'N/A'}</td>
+                            <td class="${utilizationClass}">
+                                ${beam.utilization?.toFixed(1) || 'N/A'}%
+                            </td>
+                            <td>
+                                ${isSelected ? '<span class="status-pass">SELECTED</span>' :
+                        '<span style="color: #718096; font-size: 0.7rem;">Available</span>'}
+                            </td>
+                            <td>
+                                <button class="beam-select-btn ${isSelected ? 'selected' : ''}"
+                                        onclick="selectBeamAndAnalyze(${index})"
+                                        ${isSelected ? 'disabled' : ''}>
+                                    ${isSelected ? 'Current' : 'Select & Analyze'}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            });
+
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        function getUtilizationClass(utilization) {
+            if (utilization > 90) return 'utilization-high';
+            if (utilization > 75) return 'utilization-medium';
+            return 'utilization-low';
+        }
+
+        async function selectBeamAndAnalyze(index) {
+            if (index < 0 || index >= currentBeamCandidates.length) {
+                showError('Invalid beam selection');
+                return;
+            }
+
+            if (!API_BASE) {
+                showError('API endpoint not available');
+                return;
+            }
+
+            // Update the selected index FIRST
+            selectedBeamIndex = index;
+            const selectedBeam = currentBeamCandidates[index];
+
+            showLoading();
+            showPerformanceIndicator(`Analyzing with ${selectedBeam.designation}...`);
+
+            try {
+                // Update the beam selection display immediately
+                updateBeamSelection();
+
+                // Get current configuration
+                const config = getFormData();
+                currentConfiguration = config;
+
+                // Perform a NEW analysis with the same configuration
                 const startTime = Date.now();
 
                 const response = await fetch(`${API_BASE}/analyze`, {
@@ -731,37 +1094,118 @@
                 const data = await response.json();
                 const clientTime = Date.now() - startTime;
 
+                // Override the results to show our selected beam
+                if (data.results) {
+                    data.results.selectedBeam = {
+                        designation: selectedBeam.designation,
+                        weight: selectedBeam.weight,
+                        depth: selectedBeam.depth
+                    };
+                }
+
+                // Store the analysis results with our selected beam
+                currentAnalysisResults = {
+                    ...data,
+                    metadata: data.metadata,
+                    clientTime: clientTime,
+                    analysisDate: new Date().toISOString(),
+                    manuallySelectedBeam: selectedBeam
+                };
+
                 hideLoading();
-                displayResults(data, data.metadata, clientTime);
-                showSuccess('✅ Analysis completed on Windows!');
+
+                // Update the display with the selected beam
+                displayResultsWithSelectedBeam(data, data.metadata, clientTime, selectedBeam);
+
+                showSuccess(`✅ Analysis completed with selected beam: ${selectedBeam.designation} (${selectedBeam.utilization.toFixed(1)}% utilized)`);
+
             } catch (error) {
                 hideLoading();
-                showError(`❌ Analysis failed: ${error.message}`);
+                showError(`❌ Error analyzing with selected beam: ${error.message}`);
             }
         }
 
-        async function clearCache() {
-            if (!API_BASE) {
-                showError('❌ API endpoint not available');
-                return;
+        function displayResultsWithSelectedBeam(data, metadata, clientTime, selectedBeam) {
+            // Display calculated ECL and K-factors
+            document.getElementById('calculatedECL').textContent = `${data.calculatedECL?.toLocaleString() || 'N/A'} lbs`;
+            document.getElementById('k1FactorDisplay').textContent = data.kFactors?.k1?.toFixed(3) || '-';
+            document.getElementById('k2FactorDisplay').textContent = data.kFactors?.k2?.toFixed(3) || '-';
+
+            // Update selected beam information with our manually selected beam
+            document.getElementById('beamDesignation').textContent = selectedBeam.designation;
+            document.getElementById('beamWeight').textContent = `${selectedBeam.weight.toFixed(1)} lbs/ft`;
+
+            const results = data.results;
+            if (results) {
+                // Update load calculations
+                document.getElementById('maxWheelLoad').textContent = `${results.maxWheelLoad?.toLocaleString() || 0} lbs`;
+                document.getElementById('ecl').textContent = `${(data.calculatedECL || 0).toLocaleString()} lbs`;
+                document.getElementById('k1Factor').textContent = data.kFactors?.k1?.toFixed(3) || '-';
+                document.getElementById('k2Factor').textContent = data.kFactors?.k2?.toFixed(3) || '-';
+
+                // Update structural checks
+                document.getElementById('lateralCheck').innerHTML = getStatus(results.lateralDeflectionPass);
+                document.getElementById('longitudinalCheck').innerHTML = getStatus(results.longitudinalDeflectionPass);
+                document.getElementById('stressCheck').innerHTML = getStatus(results.stressCheckPass);
+                document.getElementById('overallStatus').innerHTML = getStatus(results.overallPass,
+                    results.overallPass ? 'ACCEPTABLE' : 'INADEQUATE');
+
+                // Update foundation loads
+                document.getElementById('columnLoad').textContent = `${results.columnLoad?.toLocaleString() || 0} lbs`;
+                document.getElementById('lateralOTM').textContent = `${results.lateralOTM?.toLocaleString() || 0} ft-lbs`;
+                document.getElementById('longitudinalOTM').textContent = `${results.longitudinalOTM?.toLocaleString() || 0} ft-lbs`;
+                document.getElementById('maxVerticalLoad').textContent = `${results.maxVerticalLoad?.toLocaleString() || 0} lbs`;
             }
 
-            try {
-                showPerformanceIndicator('Clearing cache...');
-                const response = await fetch(`${API_BASE}/clear-cache`, { method: 'POST' });
-
-                if (response.ok) {
-                    document.getElementById('cacheStatus').textContent = 'Cleared';
-                    showSuccess('✅ Cache cleared successfully');
-                    setTimeout(() => {
-                        document.getElementById('cacheStatus').textContent = 'Active';
-                    }, 3000);
+            // Add manual selection note to the selected beam card
+            const selectedBeamCard = document.querySelector('.result-card[style*="border-left: 4px solid #4caf50"]');
+            if (selectedBeamCard) {
+                const existingNote = selectedBeamCard.querySelector('.selection-note');
+                if (existingNote) {
+                    existingNote.remove();
                 }
-                hidePerformanceIndicator();
-            } catch (error) {
-                hidePerformanceIndicator();
-                showError('❌ Failed to clear cache');
+
+                const note = document.createElement('div');
+                note.className = 'selection-note';
+                note.style.cssText = 'margin-top: 10px; padding: 8px; background: #e0f2fe; border-radius: 6px; font-size: 0.8rem; color: #0369a1;';
+                note.innerHTML = `<strong>Manual Selection:</strong> Beam manually selected from candidates. Capacity: ${selectedBeam.capacity.toLocaleString()} lbs, Utilization: ${selectedBeam.utilization.toFixed(1)}%`;
+                selectedBeamCard.appendChild(note);
             }
+
+            // Display performance information
+            document.getElementById('processingTime').textContent = metadata?.processingTimeMs ?
+                `${metadata.processingTimeMs.toFixed(1)}ms (Server) + ${clientTime}ms (Client)` : `${clientTime}ms`;
+            document.getElementById('fromCache').textContent = metadata?.cached ? 'Yes' : 'No';
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function updateBeamSelection() {
+            // Update the table rows
+            const rows = document.querySelectorAll('.beam-row');
+            rows.forEach((row, index) => {
+                const isSelected = index === selectedBeamIndex;
+                const button = row.querySelector('.beam-select-btn');
+
+                if (isSelected) {
+                    row.classList.add('selected');
+                    button.textContent = 'Current';
+                    button.disabled = true;
+                    button.classList.add('selected');
+                } else {
+                    row.classList.remove('selected');
+                    button.textContent = 'Select & Analyze';
+                    button.disabled = false;
+                    button.classList.remove('selected');
+                }
+
+                // Update status column
+                const statusCell = row.cells[5];
+                statusCell.innerHTML = isSelected ?
+                    '<span class="status-pass">SELECTED</span>' :
+                    '<span style="color: #718096; font-size: 0.7rem;">Available</span>';
+            });
         }
 
         function getStatus(passed, text = null) {
@@ -770,38 +1214,293 @@
             return `<span class="${className}">${statusText}</span>`;
         }
 
-        // Initialize the Windows interface
-        document.addEventListener('DOMContentLoaded', async function () {
-            console.log('🖥️ Beam Calculator - Windows Edition initialized');
+        async function clearCache() {
+            if (!API_BASE) return;
 
-            // Find working API endpoint
+            try {
+                await fetch(`${API_BASE}/clear-cache`, { method: 'POST' });
+                showSuccess('✅ Cache cleared');
+            } catch (error) {
+                showError('❌ Failed to clear cache');
+            }
+        }
+
+        function exportResults() {
+            if (!currentAnalysisResults || !currentBeamCandidates || currentBeamCandidates.length === 0) {
+                showError('No results to export. Please run an analysis first.');
+                return;
+            }
+
+            try {
+                // Get the selected beam
+                const selectedBeam = currentBeamCandidates[selectedBeamIndex] || currentBeamCandidates[0];
+
+                // Create Excel data structure
+                const excelData = createExcelData(selectedBeam);
+
+                // Convert to CSV format (simplified Excel export)
+                const csvContent = convertToCSV(excelData);
+
+                // Create and download file
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `beam-analysis-${selectedBeam.designation}-${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showSuccess(`✅ Analysis exported successfully for beam ${selectedBeam.designation}`);
+
+            } catch (error) {
+                showError(`❌ Export failed: ${error.message}`);
+                console.error('Export error:', error);
+            }
+        }
+
+        function createExcelData(selectedBeam) {
+            const config = currentConfiguration;
+            const results = currentAnalysisResults.results || {};
+
+            const data = [
+                ['BEAM ANALYSIS REPORT'],
+                ['Generated:', new Date().toLocaleString()],
+                [''],
+                ['SELECTED BEAM INFORMATION'],
+                ['Designation:', selectedBeam.designation],
+                ['Weight (lbs/ft):', selectedBeam.weight?.toFixed(1) || 'N/A'],
+                ['Depth (in):', selectedBeam.depth?.toFixed(1) || 'N/A'],
+                ['Capacity (lbs):', selectedBeam.capacity?.toLocaleString() || 'N/A'],
+                ['Utilization (%):', selectedBeam.utilization?.toFixed(1) || 'N/A'],
+                [''],
+                ['CONFIGURATION PARAMETERS'],
+                ['Rated Capacity (lbs):', config.ratedCapacity?.toLocaleString() || 'N/A'],
+                ['Hoist + Trolley Weight (lbs):', config.weightHoistTrolley?.toLocaleString() || 'N/A'],
+                ['Girder Weight (lbs):', config.girderWeight?.toLocaleString() || 'N/A'],
+                ['Panel Weight (lbs):', config.panelWeight?.toLocaleString() || 'N/A'],
+                ['End Truck Weight (lbs):', config.endTruckWeight?.toLocaleString() || 'N/A'],
+                ['Rail Height (in):', config.railHeight || 'N/A'],
+                ['Wheel Base (ft):', config.wheelBase || 'N/A'],
+                ['Support Centers (ft):', config.supportCenters || 'N/A'],
+                ['Number of Columns:', config.numCols || 'N/A'],
+                ['Freestanding:', config.freestanding ? 'Yes' : 'No'],
+                ['Capped System:', config.capped ? 'Yes' : 'No'],
+                ['Hoist Speed (fpm):', config.hoistSpeed || 'N/A'],
+                [''],
+                ['CALCULATED VALUES'],
+                ['Required ECL (lbs):', currentAnalysisResults.calculatedECL?.toLocaleString() || 'N/A'],
+                ['K1 Factor:', currentAnalysisResults.kFactors?.k1?.toFixed(3) || 'N/A'],
+                ['K2 Factor:', currentAnalysisResults.kFactors?.k2?.toFixed(3) || 'N/A'],
+                [''],
+                ['LOAD ANALYSIS'],
+                ['Max Wheel Load (lbs):', results.maxWheelLoad?.toLocaleString() || 'N/A'],
+                ['Column Load (lbs):', results.columnLoadFoundation ? (results.columnLoadFoundation * 1000).toLocaleString() : 'N/A'],
+                ['Max Vertical Load (lbs):', results.maxVerticalLoad?.toLocaleString() || 'N/A'],
+                [''],
+                ['MOMENTS AND OVERTURNING'],
+                ['Lateral OTM (ft-lbs):', results.lateralOTM?.toLocaleString() || 'N/A'],
+                ['Longitudinal OTM (ft-lbs):', results.longitudinalOTM?.toLocaleString() || 'N/A'],
+                [''],
+                ['STRUCTURAL CHECKS'],
+                ['Lateral Deflection Check:', results.lateralDeflectionPass ? 'PASS' : 'FAIL'],
+                ['Longitudinal Deflection Check:', results.longitudinalDeflectionPass ? 'PASS' : 'FAIL'],
+                ['Stress Check:', results.stressCheckPass ? 'PASS' : 'FAIL'],
+                ['Overall Status:', results.overallPass ? 'ACCEPTABLE' : 'INADEQUATE'],
+                [''],
+                ['BEAM CANDIDATES'],
+                ['Rank', 'Designation', 'Weight (lbs/ft)', 'Capacity (lbs)', 'Utilization (%)', 'Status']
+            ];
+
+            // Add beam candidates
+            currentBeamCandidates.forEach((beam, index) => {
+                data.push([
+                    index + 1,
+                    beam.designation,
+                    beam.weight?.toFixed(1) || 'N/A',
+                    beam.capacity?.toLocaleString() || 'N/A',
+                    beam.utilization?.toFixed(1) || 'N/A',
+                    index === selectedBeamIndex ? 'SELECTED' : 'Available'
+                ]);
+            });
+
+            return data;
+        }
+
+        function convertToCSV(data) {
+            return data.map(row =>
+                row.map(cell => {
+                    // Handle cells that might contain commas or quotes
+                    const cellStr = String(cell || '');
+                    if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                        return '"' + cellStr.replace(/"/g, '""') + '"';
+                    }
+                    return cellStr;
+                }).join(',')
+            ).join('\n');
+        }
+
+        // Modal functions
+        function showSaveDialog() {
+            if (!currentAnalysisResults || Object.keys(currentAnalysisResults).length === 0) {
+                showError('No analysis to save');
+                return;
+            }
+            document.getElementById('saveModal').style.display = 'block';
+        }
+
+        function closeSaveDialog() {
+            document.getElementById('saveModal').style.display = 'none';
+        }
+
+        async function saveAnalysis() {
+            const projectName = document.getElementById('saveProjectName').value.trim();
+            const notes = document.getElementById('saveNotes').value.trim();
+
+            if (!projectName) {
+                showError('Project name required');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/save-analysis`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        projectName,
+                        configuration: currentConfiguration,
+                        results: currentAnalysisResults,
+                        notes
+                    })
+                });
+
+                if (response.ok) {
+                    closeSaveDialog();
+                    showSuccess('✅ Analysis saved');
+                } else {
+                    showError('❌ Save failed');
+                }
+            } catch (error) {
+                showError('❌ Save failed');
+            }
+        }
+
+        function showLoadDialog() {
+            document.getElementById('loadModal').style.display = 'block';
+            loadSavedAnalyses();
+        }
+
+        function closeLoadDialog() {
+            document.getElementById('loadModal').style.display = 'none';
+        }
+
+        async function loadSavedAnalyses() {
+            try {
+                const response = await fetch(`${API_BASE}/saved-analyses`);
+                const data = await response.json();
+
+                const listDiv = document.getElementById('analysesList');
+                if (data.analyses && data.analyses.length > 0) {
+                    listDiv.innerHTML = data.analyses.map(a =>
+                        `<div style="padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 5px; cursor: pointer;"
+                                  onclick="loadAnalysis(${a.id})">
+                                <strong>${a.projectName}</strong><br>
+                                <small>${new Date(a.createdDate).toLocaleDateString()}</small>
+                            </div>`
+                    ).join('');
+                } else {
+                    listDiv.innerHTML = '<p>No saved analyses found</p>';
+                }
+            } catch (error) {
+                document.getElementById('analysesList').innerHTML = '<p>Error loading analyses</p>';
+            }
+        }
+
+        async function loadAnalysis(id) {
+            try {
+                const response = await fetch(`${API_BASE}/load-analysis/${id}`);
+                const data = await response.json();
+
+                // Load configuration
+                const config = JSON.parse(data.configuration);
+                Object.keys(config).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = config[key];
+                        } else {
+                            element.value = config[key];
+                        }
+                    }
+                });
+
+                currentConfiguration = config;
+                if (data.results) {
+                    currentAnalysisResults = JSON.parse(data.results);
+                }
+
+                closeLoadDialog();
+                showSuccess(`✅ Loaded: ${data.projectName}`);
+            } catch (error) {
+                showError('❌ Load failed');
+            }
+        }
+
+        // System info
+        async function loadSystemInfo() {
+            if (!API_BASE) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/system-info`);
+                const data = await response.json();
+
+                document.getElementById('platform').textContent = data.platform || 'Windows';
+                document.getElementById('status').textContent = 'Online';
+                document.getElementById('memory').textContent = data.totalMemory ?
+                    `${Math.round(data.totalMemory / 1024 / 1024)}MB` : 'Unknown';
+                document.getElementById('savedCount').textContent = data.totalSavedAnalyses || '0';
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function () {
+            console.log('🖥️ Beam Calculator initialized');
+
             const endpointFound = await findWorkingEndpoint();
 
             if (endpointFound) {
-                console.log(`✅ Using API endpoint: ${API_BASE}`);
                 document.getElementById('status').textContent = 'Online';
-
-                // Load system info
                 await loadSystemInfo();
 
-                // Test API connectivity
                 try {
                     const response = await fetch(`${API_BASE}/health`);
                     if (response.ok) {
-                        const health = await response.json();
-                        console.log('✅ Windows API connection successful:', health);
                         document.getElementById('status').textContent = 'Healthy';
                     }
                 } catch (error) {
-                    console.error('❌ API health check failed:', error);
                     document.getElementById('status').textContent = 'Error';
                 }
             } else {
-                console.error('❌ No working API endpoints found');
                 document.getElementById('status').textContent = 'API Unavailable';
-                showError('⚠️ Cannot connect to beam calculation engine. Please check that the API is running.');
+                showError('Cannot connect to API');
             }
         });
+
+        // Close modals when clicking outside
+        window.onclick = function (event) {
+            const saveModal = document.getElementById('saveModal');
+            const loadModal = document.getElementById('loadModal');
+
+            if (event.target === saveModal) {
+                closeSaveDialog();
+            }
+            if (event.target === loadModal) {
+                closeLoadDialog();
+            }
+        };
     </script>
 </body>
 </html>

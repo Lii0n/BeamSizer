@@ -9,12 +9,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// SQL Server LocalDB - No passwords needed!
+// PostgreSQL Database Connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Business services  
-builder.Services.AddScoped<IBeamCalculationService, BeamCalculationService>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 // CORS for development
@@ -51,29 +50,31 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
-// Database initialization - automatic setup!
+// Database initialization - PostgreSQL setup!
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
         await context.Database.EnsureCreatedAsync();
-        Console.WriteLine("✅ Database created successfully!");
+        Console.WriteLine("✅ PostgreSQL Database created successfully!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Database error: {ex.Message}");
-        Console.WriteLine("💡 Make sure Visual Studio is installed (includes LocalDB)");
+        Console.WriteLine($"❌ PostgreSQL Database error: {ex.Message}");
+        Console.WriteLine("💡 Make sure PostgreSQL is installed and running");
+        Console.WriteLine("💡 Default connection: Host=localhost;Database=BeamCalculator;Username=postgres;Password=postgres");
     }
 }
 
 // Get the local IP address for network access
 var localIP = GetLocalIPAddress();
 
-Console.WriteLine("🏗️ Beam Calculator starting...");
+Console.WriteLine("🏗️ Beam Calculator starting with PostgreSQL...");
 Console.WriteLine("📊 Local access: http://localhost:5265/");
 Console.WriteLine($"🌐 Network access: http://{localIP}:5265/");
 Console.WriteLine($"🔒 HTTPS: https://{localIP}:7089/");
+Console.WriteLine("🐘 Database: PostgreSQL");
 Console.WriteLine("📋 Share the network URL with your team!");
 
 app.Run();

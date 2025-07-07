@@ -1,5 +1,5 @@
 // BeamCalculator.Data/Models/ApplicationDbContext.cs
-using Microsoft.EntityFrameworkCore; // Fixed: Add this using statement
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace BeamCalculator.Data.Models
@@ -33,7 +33,7 @@ namespace BeamCalculator.Data.Models
                 entity.HasIndex(e => e.Email).IsUnique();
             });
 
-            // Configure SavedAnalysis entity
+            // Configure SavedAnalysis entity - PROPERLY FOR POSTGRESQL
             modelBuilder.Entity<SavedAnalysis>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -41,7 +41,7 @@ namespace BeamCalculator.Data.Models
                 entity.Property(e => e.CreatedDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.LastModified).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                // JSON column for storing analysis results (PostgreSQL specific)
+                // JSON columns for PostgreSQL - jsonb is correct for PostgreSQL
                 entity.Property(e => e.AnalysisResultsJson).HasColumnType("jsonb");
                 entity.Property(e => e.ConfigurationJson).HasColumnType("jsonb");
 
@@ -50,6 +50,12 @@ namespace BeamCalculator.Data.Models
                       .WithMany(u => u.SavedAnalyses)
                       .HasForeignKey(s => s.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                // Optional relationship to Project
+                entity.HasOne(s => s.Project)
+                      .WithMany(p => p.SavedAnalyses)
+                      .HasForeignKey(s => s.ProjectId)
+                      .OnDelete(DeleteBehavior.SetNull);
 
                 // Indexes
                 entity.HasIndex(e => e.UserId);
@@ -91,8 +97,8 @@ namespace BeamCalculator.Data.Models
                     Id = 1,
                     Username = "admin",
                     Email = "admin@alexandercases.com",
-                    // Replace the BCrypt call with a pre-generated hash
-                    PasswordHash = "$2a$11$6IlgUZ8/DFyQOE2GXOyN6OV6rVdl2qQeLiDv8j3oXyFbU7t4fzujC", // "Admin123!"
+                    // Pre-generated hash for "Admin123!"
+                    PasswordHash = "$2a$11$6IlgUZ8/DFyQOE2GXOyN6OV6rVdl2qQeLiDv8j3oXyFbU7t4fzujC",
                     Role = "Admin",
                     CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc), // Static date
                     IsActive = true

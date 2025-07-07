@@ -1,17 +1,10 @@
-using BeamCalculator.Data;
+// /src/Services/AnalysisService.cs
 using BeamCalculator.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace BeamCalculator.Services
 {
-    public interface IAnalysisService
-    {
-        Task<SavedAnalysis> SaveAnalysisAsync(string projectName, object config, object results, int userId, string notes = "");
-        Task<SavedAnalysis?> GetAnalysisAsync(int id, int userId);
-        Task<List<SavedAnalysis>> GetUserAnalysesAsync(int userId);
-        Task<bool> DeleteAnalysisAsync(int id, int userId);
-    }
-
     public class AnalysisService : IAnalysisService
     {
         private readonly ApplicationDbContext _context;
@@ -27,8 +20,8 @@ namespace BeamCalculator.Services
             {
                 ProjectName = projectName,
                 UserId = userId,
-                ConfigurationJson = System.Text.Json.JsonSerializer.Serialize(config),
-                AnalysisResultsJson = System.Text.Json.JsonSerializer.Serialize(results),
+                ConfigurationJson = JsonSerializer.Serialize(config),
+                AnalysisResultsJson = JsonSerializer.Serialize(results),
                 Notes = notes,
                 CreatedDate = DateTime.UtcNow,
                 LastModified = DateTime.UtcNow
@@ -50,7 +43,7 @@ namespace BeamCalculator.Services
         {
             return await _context.SavedAnalyses
                 .Where(a => a.UserId == userId)
-                .OrderByDescending(a => a.LastModified)
+                .OrderByDescending(a => a.CreatedDate)
                 .ToListAsync();
         }
 
