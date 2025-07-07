@@ -1,0 +1,30 @@
+## Build artifacts
+bin/
+obj/
+out/
+publish/
+build/
+
+## User-specific files
+*.user
+*.suo
+.vs/
+.vscode/
+
+## Local database files
+*.mdf
+*.ldf
+
+## Logs and temp files
+*.log
+*.tmp
+*.bak
+
+## Frontend artifacts
+node_modules/
+dist/
+.cache/
+
+## Environment files
+.env
+.env.*

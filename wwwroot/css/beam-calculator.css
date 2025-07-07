@@ -1,0 +1,171 @@
+/* Beam Calculator Specific Styles */
+
+.beam-candidates-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 10px;
+}
+
+    .beam-candidates-table th,
+    .beam-candidates-table td {
+        padding: 8px 6px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .beam-candidates-table th {
+        background: #f7fafc;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.75rem;
+    }
+
+    .beam-candidates-table .beam-row {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .beam-candidates-table .beam-row:hover {
+            background: #f0f9ff;
+        }
+
+        .beam-candidates-table .beam-row.selected {
+            background: #dbeafe;
+            border-left: 3px solid #3b82f6;
+        }
+
+.beam-select-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+    .beam-select-btn:hover {
+        background: #2563eb;
+    }
+
+    .beam-select-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .beam-select-btn.selected {
+        background: #22c55e;
+    }
+
+        .beam-select-btn.selected:hover {
+            background: #16a34a;
+        }
+
+/* Utilization color indicators */
+.utilization-high {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.utilization-medium {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.utilization-low {
+    color: #22c55e;
+    font-weight: 600;
+}
+
+/* Selection note styling */
+.selection-note {
+    margin-top: 10px;
+    padding: 8px;
+    background: #e0f2fe;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #0277bd;
+    border-left: 3px solid #0288d1;
+}
+
+/* ECL Display Styles */
+.ecl-display {
+    background: #f0f9ff;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.ecl-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+/* Export button styling */
+.btn-export {
+    background: #059669;
+    color: white;
+}
+
+    .btn-export:hover {
+        background: #047857;
+    }
+
+/* Loading states for beam selection */
+.beam-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+    .beam-loading .beam-select-btn {
+        background: #9ca3af;
+        cursor: wait;
+    }
+
+/* Success/error indicators for beam selection */
+.beam-status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 5px;
+}
+
+    .beam-status-indicator.adequate {
+        background: #22c55e;
+    }
+
+    .beam-status-indicator.marginal {
+        background: #f59e0b;
+    }
+
+    .beam-status-indicator.inadequate {
+        background: #ef4444;
+    }
+
+/* Mobile responsiveness for beam table */
+@media (max-width: 768px) {
+    .beam-candidates-table {
+        font-size: 0.75rem;
+    }
+
+        .beam-candidates-table th,
+        .beam-candidates-table td {
+            padding: 6px 4px;
+        }
+
+    .beam-select-btn {
+        padding: 3px 6px;
+        font-size: 0.6rem;
+    }
+
+    /* Stack some columns on mobile */
+    .beam-candidates-table .hide-mobile {
+        display: none;
+    }
+}
