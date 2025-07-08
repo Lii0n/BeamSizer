@@ -1,21 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BeamCalculator.Data.Models;
-using BeamCalculator.Services;
-
-var builder = WebApplication.CreateBuilder(args);
+﻿var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// SQL Server LocalDB - No passwords needed!
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Business services  
-builder.Services.AddScoped<IBeamCalculationService, BeamCalculationService>();
-builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 // CORS for development
 builder.Services.AddCors(options =>
@@ -50,22 +38,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-
-// Database initialization - automatic setup!
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
-    {
-        await context.Database.EnsureCreatedAsync();
-        Console.WriteLine("✅ Database created successfully!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Database error: {ex.Message}");
-        Console.WriteLine("💡 Make sure Visual Studio is installed (includes LocalDB)");
-    }
-}
 
 // Get the local IP address for network access
 var localIP = GetLocalIPAddress();

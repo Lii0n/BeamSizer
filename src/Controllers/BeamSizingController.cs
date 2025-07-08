@@ -1,7 +1,8 @@
+// BeamSizingController.cs - Cleaned up version with only used endpoints
+// Removed unused endpoints and added missing k-factors endpoint
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using BeamSizing;
-using BeamCalculator.Data.Models;
 
 namespace BeamCalculator.Api.Controllers
 {
@@ -10,16 +11,15 @@ namespace BeamCalculator.Api.Controllers
     public class BeamSizingController : ControllerBase
     {
         private readonly ILogger<BeamSizingController> _logger;
-        private readonly ApplicationDbContext _context;
 
-        public BeamSizingController(ILogger<BeamSizingController> logger, ApplicationDbContext context)
+        public BeamSizingController(ILogger<BeamSizingController> logger)
         {
             _logger = logger;
-            _context = context;
         }
 
         /// <summary>
-        /// Health check for Beam calculation engine
+        /// Health check for beam calculation engine
+        /// USED BY: Frontend health checking and endpoint discovery
         /// </summary>
         [HttpGet("health")]
         public ActionResult<object> Health()
@@ -65,6 +65,7 @@ namespace BeamCalculator.Api.Controllers
 
         /// <summary>
         /// Get system information
+        /// USED BY: Frontend for system monitoring
         /// </summary>
         [HttpGet("system-info")]
         public ActionResult<object> GetSystemInfo()
@@ -91,6 +92,7 @@ namespace BeamCalculator.Api.Controllers
 
         /// <summary>
         /// Clear cache
+        /// USED BY: Frontend cache management
         /// </summary>
         [HttpPost("clear-cache")]
         public ActionResult<object> ClearCache()
@@ -114,34 +116,34 @@ namespace BeamCalculator.Api.Controllers
         }
 
         /// <summary>
-        /// Test database connection
+        /// Get K-factors for a given wheelbase to span ratio
+        /// USED BY: Frontend for K-factor calculations (was missing!)
         /// </summary>
-        [HttpGet("test-db")]
-        public async Task<ActionResult<object>> TestDatabase()
+        [HttpGet("k-factors")]
+        public ActionResult<object> GetKFactors([FromQuery] double wheelbaseSpanRatio)
         {
             try
             {
-                var userCount = await _context.Users.CountAsync();
-                var analysisCount = await _context.SavedAnalyses.CountAsync();
+                var kFactors = DataLoader.GetKFactors(wheelbaseSpanRatio);
 
                 return Ok(new
                 {
-                    status = "database_connected",
-                    userCount = userCount,
-                    analysisCount = analysisCount,
-                    connectionString = _context.Database.GetConnectionString(),
+                    wheelbaseSpanRatio = wheelbaseSpanRatio,
+                    k1 = kFactors.k1,
+                    k2 = kFactors.k2,
                     timestamp = DateTime.UtcNow
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Database connection failed");
-                return StatusCode(500, new { error = "Database connection failed", details = ex.Message });
+                _logger.LogError(ex, "Error getting K-factors for ratio {Ratio}", wheelbaseSpanRatio);
+                return StatusCode(500, new { error = "Failed to get K-factors", details = ex.Message });
             }
         }
 
         /// <summary>
-        /// Perform complete Beam sizing analysis with top 5 candidates
+        /// Perform complete beam sizing analysis with top 5 candidates
+        /// USED BY: Frontend main analysis functionality
         /// </summary>
         [HttpPost("analyze")]
         public ActionResult<object> AnalyzeBeam([FromBody] BeamAnalysisRequest request)
@@ -230,7 +232,8 @@ namespace BeamCalculator.Api.Controllers
         }
 
         /// <summary>
-        /// Validate Beam configuration without performing full analysis
+        /// Validate beam configuration without performing full analysis
+        /// USED BY: Frontend configuration validation
         /// </summary>
         [HttpPost("validate")]
         public ActionResult<object> ValidateConfiguration([FromBody] BeamAnalysisRequest request)
@@ -279,13 +282,14 @@ namespace BeamCalculator.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating Beam configuration");
+                _logger.LogError(ex, "Error validating beam configuration");
                 return StatusCode(500, new { error = "Validation failed", details = ex.Message });
             }
         }
 
         /// <summary>
         /// Get available beam options for given requirements with detailed information
+        /// USED BY: Frontend beam selection functionality
         /// </summary>
         [HttpGet("beams")]
         public ActionResult<object> GetBeamOptions(
@@ -324,115 +328,10 @@ namespace BeamCalculator.Api.Controllers
                 return StatusCode(500, new { error = "Failed to get beam options", details = ex.Message });
             }
         }
-
-        /// <summary>
-        /// Perform analysis and save to database in one step
-        /// </summary>
-        [HttpPost("analyze-and-save")]
-        public async Task<ActionResult<object>> AnalyzeAndSave([FromBody] AnalyzeAndSaveRequest request)
-        {
-            try
-            {
-                // Create configuration
-                var config = new BeamSizerConfig(
-                    ratedCapacity: request.Configuration.RatedCapacity,
-                    weightHoistTrolley: request.Configuration.WeightHoistTrolley,
-                    girderWeight: request.Configuration.GirderWeight,
-                    panelWeight: request.Configuration.PanelWeight,
-                    endTruckWeight: request.Configuration.EndTruckWeight,
-                    numCols: request.Configuration.NumCols,
-                    railHeight: request.Configuration.RailHeight,
-                    wheelBase: request.Configuration.WheelBase,
-                    supportCenters: request.Configuration.SupportCenters,
-                    freestanding: request.Configuration.Freestanding,
-                    capped: request.Configuration.Capped,
-                    bridgeSpan: request.Configuration.SupportCenters, // Use supportCenters for bridgeSpan
-                    hoistSpeed: request.Configuration.HoistSpeed
-                );
-
-                // Perform full Beam analysis
-                var results = BeamSizing.BeamCalculator.PerformFullAnalysis(config);
-
-                // Save to database
-                var savedAnalysis = new SavedAnalysis
-                {
-                    ProjectName = request.ProjectName,
-                    UserId = request.UserId ?? 1,
-                    ConfigurationJson = System.Text.Json.JsonSerializer.Serialize(request.Configuration),
-                    AnalysisResultsJson = System.Text.Json.JsonSerializer.Serialize(results),
-                    Notes = request.Notes ?? string.Empty,
-                    CreatedDate = DateTime.UtcNow,
-                    LastModified = DateTime.UtcNow
-                };
-
-                _context.SavedAnalyses.Add(savedAnalysis);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Analysis saved for project {ProjectName} with ID {AnalysisId}",
-                    request.ProjectName, savedAnalysis.Id);
-
-                return Ok(new
-                {
-                    success = true,
-                    analysisId = savedAnalysis.Id,
-                    projectName = savedAnalysis.ProjectName,
-                    savedAt = savedAnalysis.CreatedDate,
-                    summary = new
-                    {
-                        selectedBeam = results.SelectedBeam?.Designation,
-                        overallPass = results.OverallPass,
-                        maxWheelLoad = results.MaxWheelLoad,
-                        totalBeamWeight = config.WeightBeam
-                    },
-                    fullResults = results
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in analyze-and-save for project {ProjectName}", request.ProjectName);
-                return StatusCode(500, new { error = "Failed to analyze and save", details = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get saved analyses for a user
-        /// </summary>
-        [HttpGet("saved-analyses")]
-        public async Task<ActionResult<object>> GetSavedAnalyses([FromQuery] int userId = 1, [FromQuery] int limit = 10)
-        {
-            try
-            {
-                var analyses = await _context.SavedAnalyses
-                    .Where(a => a.UserId == userId)
-                    .OrderByDescending(a => a.CreatedDate)
-                    .Take(limit)
-                    .Select(a => new
-                    {
-                        a.Id,
-                        a.ProjectName,
-                        a.CreatedDate,
-                        a.LastModified,
-                        a.Notes
-                    })
-                    .ToListAsync();
-
-                return Ok(new
-                {
-                    userId = userId,
-                    count = analyses.Count,
-                    analyses = analyses
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving saved analyses");
-                return StatusCode(500, new { error = "Failed to retrieve analyses" });
-            }
-        }
     }
 
     /// <summary>
-    /// Request model for Beam analysis
+    /// Request model for beam analysis
     /// </summary>
     public class BeamAnalysisRequest
     {
@@ -448,16 +347,5 @@ namespace BeamCalculator.Api.Controllers
         public bool Freestanding { get; set; }
         public bool Capped { get; set; }
         public double HoistSpeed { get; set; } = 0;
-    }
-
-    /// <summary>
-    /// Request model for analyze and save in one step
-    /// </summary>
-    public class AnalyzeAndSaveRequest
-    {
-        public string ProjectName { get; set; } = string.Empty;
-        public BeamAnalysisRequest Configuration { get; set; } = new();
-        public string? Notes { get; set; }
-        public int? UserId { get; set; } = 1;
     }
 }

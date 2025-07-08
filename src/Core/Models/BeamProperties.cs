@@ -1,5 +1,5 @@
 // BeamProperties.cs
-// Updated class with constructor for easier data initialization
+// Cleaned up version with only used properties and methods
 
 using System;
 
@@ -7,19 +7,19 @@ namespace BeamSizing
 {
     public class BeamProperties
     {
-        // Properties
-        public string Designation { get; set; } = string.Empty;     
-        public double Depth { get; set; }            
-        public double Weight { get; set; }           
-        public double Area { get; set; }             
-        public double WebThickness { get; set; }     
-        public double FlangeWidth { get; set; }      
-        public double FlangeThickness { get; set; }  
-        public double FlangeArea { get; set; }       
-        public double I { get; set; }                
-        public double S { get; set; }                
-        public double RadiusOfGyration { get; set; } 
-        public double FlangeGage { get; set; }       
+        // Essential structural properties
+        public string Designation { get; set; } = string.Empty;
+        public double Depth { get; set; }
+        public double Weight { get; set; }
+        public double Area { get; set; }
+        public double WebThickness { get; set; }
+        public double FlangeWidth { get; set; }
+        public double FlangeThickness { get; set; }
+        public double FlangeArea { get; set; }
+        public double I { get; set; }                // Moment of inertia
+        public double S { get; set; }                // Section modulus
+        public double RadiusOfGyration { get; set; }
+        public double FlangeGage { get; set; }
 
         // Default constructor
         public BeamProperties() { }
@@ -60,20 +60,5 @@ namespace BeamSizing
         {
             return $"{Designation}: {Weight} lbs/ft, I={I} in⁴, S={S} in³";
         }
-
-        /// <summary>
-        /// Calculates the beam's plastic section modulus (approximate)
-        /// </summary>
-        public double PlasticSectionModulus => S * 1.1; // Approximate relationship
-
-        /// <summary>
-        /// Calculates the beam's web area
-        /// </summary>
-        public double WebArea => (Depth - 2 * FlangeThickness) * WebThickness;
-
-        /// <summary>
-        /// Checks if this is a compact section (simplified check)
-        /// </summary>
-        public bool IsCompactSection => (FlangeWidth / (2 * FlangeThickness)) < 8.5;
     }
 }

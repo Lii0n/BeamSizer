@@ -1,5 +1,5 @@
-﻿// BeamCalculator.cs - Optimized version to prevent duplicate beam searches
-// FIXED: Eliminated duplicate calls to FindTopAdequateBeams
+﻿// BeamCalculator.cs - Cleaned up version with only used functions
+// Removed all unused functions while preserving core functionality
 
 using System;
 using System.Collections.Generic;
@@ -10,14 +10,6 @@ namespace BeamSizing
     public static class BeamCalculator
     {
         /// <summary>
-        /// Gets analysis summary for the given configuration.
-        /// </summary>
-        public static string GetAnalysisSummary(BeamSizerConfig config)
-        {
-            return config.GetAnalysisSummary();
-        }
-
-        /// <summary>
         /// Find K-factors using the wheelbase to support centers ratio.
         /// </summary>
         public static (double k1, double k2) FindKFactors(BeamSizerConfig config)
@@ -27,7 +19,7 @@ namespace BeamSizing
 
         /// <summary>
         /// Find the lightest adequate beam for the given configuration.
-        /// OPTIMIZED: Now returns both the selected beam and top candidates to avoid duplicate searches
+        /// Returns both the selected beam and top candidates to avoid duplicate searches
         /// </summary>
         public static (BeamProperties selectedBeam, List<BeamProperties> topCandidates) FindBeamSizeWithCandidates(BeamSizerConfig config, double k1)
         {
@@ -49,7 +41,7 @@ namespace BeamSizing
 
             Console.WriteLine($"DEBUG: Selected beam {selectedBeam.Designation} with weight {selectedBeam.Weight:F1} lbs/ft");
 
-            // Display the candidates (moved from PerformFullAnalysis to avoid duplication)
+            // Display the candidates
             Console.WriteLine("\nTop Beam Candidates (sorted by weight only):");
             foreach (var beam in topBeams)
             {
@@ -69,16 +61,6 @@ namespace BeamSizing
         }
 
         /// <summary>
-        /// Original FindBeamSize method - kept for backward compatibility
-        /// Now uses the optimized version internally
-        /// </summary>
-        public static BeamProperties FindBeamSize(BeamSizerConfig config, double k1)
-        {
-            var (selectedBeam, _) = FindBeamSizeWithCandidates(config, k1);
-            return selectedBeam;
-        }
-
-        /// <summary>
         /// Calculate runway beam weight.
         /// </summary>
         public static double CalculateRunwayBeamWeight(BeamSizerConfig config, BeamProperties beam)
@@ -90,7 +72,7 @@ namespace BeamSizing
         }
 
         /// <summary>
-        /// Calculate lateral load (20% of Beam capacity + hoist/trolley weight).
+        /// Calculate lateral load (20% of crane capacity + hoist/trolley weight).
         /// </summary>
         public static double CalculateLateralLoad(BeamSizerConfig config)
         {
@@ -155,11 +137,11 @@ namespace BeamSizing
             if (beam == null) return false;
 
             double railHeightInches = config.RailHeight * 12.0;
-            double BeamDeflection = (lateralLoad * Math.Pow(railHeightInches, 3)) /
+            double beamDeflection = (lateralLoad * Math.Pow(railHeightInches, 3)) /
                                    (3.0 * 29000000.0 * beam.I);
             double allowableDeflection = railHeightInches / 450.0;
 
-            return BeamDeflection < allowableDeflection;
+            return beamDeflection < allowableDeflection;
         }
 
         /// <summary>
@@ -170,11 +152,11 @@ namespace BeamSizing
             if (beam == null) return false;
 
             double railHeightInches = config.RailHeight * 12.0;
-            double BeamDeflection = (longitudinalLoad * Math.Pow(railHeightInches, 3)) /
+            double beamDeflection = (longitudinalLoad * Math.Pow(railHeightInches, 3)) /
                                    (3.0 * 29000000.0 * beam.I);
             double allowableDeflection = railHeightInches / 500.0;
 
-            return BeamDeflection < allowableDeflection;
+            return beamDeflection < allowableDeflection;
         }
 
         /// <summary>
@@ -185,10 +167,10 @@ namespace BeamSizing
             if (beam == null) return false;
 
             double railHeightInches = config.RailHeight * 12.0;
-            double BeamStress = (lateralLoad * railHeightInches) / beam.S;
+            double beamStress = (lateralLoad * railHeightInches) / beam.S;
             double allowableStress = 24000;
 
-            return BeamStress < allowableStress;
+            return beamStress < allowableStress;
         }
 
         /// <summary>
@@ -206,8 +188,8 @@ namespace BeamSizing
         }
 
         /// <summary>
-        /// Perform complete Beam sizing analysis using pure functions.
-        /// OPTIMIZED: Single beam search call eliminates duplicate processing
+        /// Perform complete beam sizing analysis using pure functions.
+        /// MAIN ENTRY POINT - Called by BeamSizerService.PerformAnalysis()
         /// </summary>
         public static BeamSizingResults PerformFullAnalysis(BeamSizerConfig config)
         {
@@ -224,13 +206,13 @@ namespace BeamSizing
                 results.WheelbaseSpanRatio = config.WheelbaseSpanRatio;
                 results.ImpactFactor = config.ImpactFactor;
 
-                // Store Beam weight components
+                // Store beam weight components
                 results.GirderWeight = config.GirderWeight;
                 results.PanelWeight = config.PanelWeight;
                 results.EndTruckWeight = config.EndTruckWeight;
                 results.TotalBeamWeight = config.WeightBeam;
 
-                // Step 2: OPTIMIZED - Single call gets both selected beam and candidates
+                // Step 2: Single call gets both selected beam and candidates
                 Console.WriteLine($"DEBUG: bridgeSpan in config is {config.BridgeSpan:F1} ft");
 
                 var (selectedBeam, topCandidates) = FindBeamSizeWithCandidates(config, kFactors.k1);
@@ -275,7 +257,7 @@ namespace BeamSizing
 
         /// <summary>
         /// Validates a configuration without performing full analysis.
-        /// Useful for quick parameter checking.
+        /// USED BY: BeamSizingController.ValidateConfiguration() and Health checks
         /// </summary>
         public static bool ValidateConfiguration(BeamSizerConfig config)
         {
@@ -290,70 +272,6 @@ namespace BeamSizing
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Gets beam capacity for a specific configuration without full analysis.
-        /// </summary>
-        public static int GetBeamCapacity(string beamDesignation, int span, bool capped)
-        {
-            if (capped)
-            {
-                DataLoader.CappedCapacities.TryGetValue((beamDesignation, span), out int capacity);
-                return capacity;
-            }
-            else
-            {
-                DataLoader.UncappedCapacities.TryGetValue((beamDesignation, span), out int capacity);
-                return capacity;
-            }
-        }
-
-        /// <summary>
-        /// Quick check if a beam size is adequate for the given load.
-        /// Supports interpolation for non-integer span lengths.
-        /// </summary>
-        public static bool IsBeamAdequate(BeamSizerConfig config, BeamProperties beam)
-        {
-            if (beam == null) return false;
-
-            var kFactors = FindKFactors(config);
-            double ECL = kFactors.k1 * config.MaxWheelLoad;
-            double span = config.BridgeSpan;
-
-            // Use interpolated capacity for accurate results
-            double beamCapacity = DataLoader.GetInterpolatedLoadCapacity(beam.Designation, span, config.Capped);
-
-            Console.WriteLine($"DEBUG: Checking beam {beam.Designation} - Capacity: {beamCapacity:F0} lbs, Required: {ECL:F0} lbs");
-
-            return beamCapacity >= ECL;
-        }
-
-        /// <summary>
-        /// Find alternative beam options when primary selection fails
-        /// </summary>
-        public static List<BeamProperties> FindAlternativeBeams(BeamSizerConfig config, int maxOptions = 10)
-        {
-            var kFactors = FindKFactors(config);
-            double ECL = kFactors.k1 * config.MaxWheelLoad;
-
-            Console.WriteLine($"DEBUG: Finding alternatives for ECL = {ECL:F0} lbs at span = {config.BridgeSpan:F1} ft");
-
-            // Try both capped and uncapped systems
-            var alternatives = new List<BeamProperties>();
-
-            // First try the requested system type
-            var primaryOptions = DataLoader.FindTopAdequateBeams(ECL, config.BridgeSpan, config.Capped, maxOptions / 2);
-            alternatives.AddRange(primaryOptions);
-
-            // Then try the opposite system type if we need more options
-            if (alternatives.Count < maxOptions)
-            {
-                var alternateOptions = DataLoader.FindTopAdequateBeams(ECL, config.BridgeSpan, !config.Capped, maxOptions - alternatives.Count);
-                alternatives.AddRange(alternateOptions);
-            }
-
-            return alternatives.Take(maxOptions).ToList();
         }
 
         /// <summary>
@@ -412,86 +330,6 @@ namespace BeamSizing
                     return $"Interpolated between: {lowerSpan}ft({lowerCapacity:N0}) ↔ {upperSpan}ft({upperCapacity:N0}), factor={interpolationFactor:F3}";
                 }
             }
-        }
-
-        /// <summary>
-        /// Debug method to trace ECL calculation and beam selection process
-        /// OPTIMIZED: No longer causes duplicate beam searches
-        /// </summary>
-        public static void DebugBeamSelection(BeamSizerConfig config)
-        {
-            Console.WriteLine("\n" + "=".PadRight(80, '='));
-            Console.WriteLine("Beam BEAM SELECTION DEBUG TRACE");
-            Console.WriteLine("=".PadRight(80, '='));
-
-            // Step 1: Show configuration summary
-            Console.WriteLine("CONFIGURATION:");
-            Console.WriteLine($"  Rated Capacity: {config.RatedCapacity:N0} lbs");
-            Console.WriteLine($"  Hoist/Trolley Weight: {config.WeightHoistTrolley:N0} lbs");
-            Console.WriteLine($"  Total Beam Weight: {config.WeightBeam:N0} lbs");
-            Console.WriteLine($"    - Girder: {config.GirderWeight:N0} lbs");
-            Console.WriteLine($"    - Panel: {config.PanelWeight:N0} lbs");
-            Console.WriteLine($"    - End Truck: {config.EndTruckWeight:N0} lbs");
-            Console.WriteLine($"  Bridge Span: {config.BridgeSpan:F1} ft");
-            Console.WriteLine($"  Support Centers: {config.SupportCenters:F1} ft");
-            Console.WriteLine($"  Wheelbase: {config.WheelBase:F1} ft");
-            Console.WriteLine($"  Beam System: {(config.Capped ? "Capped" : "Uncapped")}");
-            Console.WriteLine($"  Impact Factor: {config.ImpactFactor:F3}");
-            Console.WriteLine($"  Max Wheel Load: {config.MaxWheelLoad:F0} lbs");
-            Console.WriteLine($"  Wheelbase/Span Ratio: {config.WheelbaseSpanRatio:F4}");
-
-            // Step 2: Calculate K-factors
-            var kFactors = FindKFactors(config);
-            Console.WriteLine($"\nK-FACTORS:");
-            Console.WriteLine($"  K1: {kFactors.k1:F3}");
-            Console.WriteLine($"  K2: {kFactors.k2:F3}");
-
-            // Step 3: Calculate ECL
-            double ECL = kFactors.k1 * config.MaxWheelLoad;
-            Console.WriteLine($"\nECL CALCULATION:");
-            Console.WriteLine($"  ECL = K1 × Max Wheel Load");
-            Console.WriteLine($"  ECL = {kFactors.k1:F3} × {config.MaxWheelLoad:F0}");
-            Console.WriteLine($"  ECL = {ECL:F0} lbs");
-
-            // Step 4: OPTIMIZED - Single beam search call
-            Console.WriteLine($"\nTOP BEAM SELECTION:");
-            var (selectedBeam, topBeams) = FindBeamSizeWithCandidates(config, kFactors.k1);
-
-            if (topBeams.Count == 0)
-            {
-                Console.WriteLine("  ERROR: No adequate beams found!");
-            }
-            else
-            {
-                Console.WriteLine($"  Found {topBeams.Count} adequate beams (sorted by weight only):");
-                Console.WriteLine($"  Selected: {selectedBeam.Designation}");
-            }
-
-            Console.WriteLine("=".PadRight(80, '=') + "\n");
-        }
-
-        /// <summary>
-        /// Test the complete analysis pipeline with debug output
-        /// OPTIMIZED: No longer causes duplicate beam searches
-        /// </summary>
-        public static BeamSizingResults TestCompleteAnalysis(BeamSizerConfig config, bool enableDebug = true)
-        {
-            if (enableDebug)
-            {
-                Console.WriteLine("=== COMPLETE ANALYSIS TEST ===");
-                DebugBeamSelection(config);
-            }
-
-            var results = PerformFullAnalysis(config);
-
-            if (enableDebug)
-            {
-                Console.WriteLine("=== ANALYSIS RESULTS ===");
-                results.PrintResults();
-                Console.WriteLine("=== END ANALYSIS TEST ===\n");
-            }
-
-            return results;
         }
     }
 }

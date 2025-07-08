@@ -1,5 +1,5 @@
-// BeamSizerConfig.cs - Immutable configuration struct for server deployment
-// Stack-allocated, zero GC pressure, thread-safe by design
+﻿// BeamSizerConfig.cs - Cleaned up version with only used functionality
+// Removed unused methods while keeping core immutable configuration
 
 using System;
 
@@ -74,7 +74,7 @@ namespace BeamSizing
             SupportCenters = supportCenters;
             Freestanding = freestanding;
             Capped = capped;
-            BridgeSpan = bridgeSpan;  // Capitalized property name
+            BridgeSpan = bridgeSpan;
             HoistSpeed = hoistSpeed;
 
             // Calculate derived values once
@@ -157,93 +157,28 @@ namespace BeamSizing
         }
 
         /// <summary>
-        /// Creates a new configuration with modified rated capacity.
-        /// Returns a new struct - original remains unchanged.
-        /// </summary>
-        public BeamSizerConfig WithRatedCapacity(double newRatedCapacity)
-        {
-            return new BeamSizerConfig(
-                ratedCapacity: newRatedCapacity,
-                weightHoistTrolley: WeightHoistTrolley,
-                girderWeight: GirderWeight,
-                panelWeight: PanelWeight,
-                endTruckWeight: EndTruckWeight,
-                numCols: NumCols,
-                railHeight: RailHeight,
-                wheelBase: WheelBase,
-                supportCenters: SupportCenters,
-                freestanding: Freestanding,
-                capped: Capped,
-                bridgeSpan: BridgeSpan,
-                hoistSpeed: HoistSpeed
-            );
-        }
-
-        /// <summary>
-        /// Creates a new configuration with modified hoist speed.
-        /// </summary>
-        public BeamSizerConfig WithHoistSpeed(double newHoistSpeed)
-        {
-            return new BeamSizerConfig(
-                ratedCapacity: RatedCapacity,
-                weightHoistTrolley: WeightHoistTrolley,
-                girderWeight: GirderWeight,
-                panelWeight: PanelWeight,
-                endTruckWeight: EndTruckWeight,
-                numCols: NumCols,
-                railHeight: RailHeight,
-                wheelBase: WheelBase,
-                supportCenters: SupportCenters,
-                freestanding: Freestanding,
-                capped: Capped,
-                bridgeSpan: BridgeSpan,
-                hoistSpeed: newHoistSpeed
-            );
-        }
-
-        /// <summary>
-        /// Creates a new configuration with modified beam system type.
-        /// </summary>
-        public BeamSizerConfig WithCappedBeams(bool useCappedBeams)
-        {
-            return new BeamSizerConfig(
-                ratedCapacity: RatedCapacity,
-                weightHoistTrolley: WeightHoistTrolley,
-                girderWeight: GirderWeight,
-                panelWeight: PanelWeight,
-                endTruckWeight: EndTruckWeight,
-                numCols: NumCols,
-                railHeight: RailHeight,
-                wheelBase: WheelBase,
-                supportCenters: SupportCenters,
-                freestanding: Freestanding,
-                capped: useCappedBeams,
-                bridgeSpan: BridgeSpan,
-                hoistSpeed: HoistSpeed
-            );
-        }
-
-        /// <summary>
         /// Gets a formatted analysis summary for debugging and validation.
         /// </summary>
         public string GetAnalysisSummary()
         {
-            return $"Beam Configuration Summary:\n" +
-                   $"  Capacity: {RatedCapacity:N0} lbs\n" +
-                   $"  Wheelbase: {WheelBase} ft, Support Centers: {SupportCenters} ft\n" +
-                   $"  Bridge Span (distance between runway beams): {BridgeSpan:F1} ft\n" +
-                   $"  Wheelbase/Support Ratio: {WheelbaseSpanRatio:F4}\n" +
-                   $"  Impact Factor: {ImpactFactor:F3}\n" +
-                   $"  Max Wheel Load: {MaxWheelLoad:F0} lbs\n" +
-                   $"  Beam System: {(Capped ? "Capped" : "Uncapped")}\n" +
-                   $"  Column Type: {(Freestanding ? "Freestanding" : "Braced")}\n" +
-                   $"  Rail Height: {RailHeight} ft\n" +
-                   $"  Hoist Speed: {(HoistSpeed > 0 ? $"{HoistSpeed} ft/min" : "Default")}\n" +
-                   $"  Beam Weight Components:\n" +
-                   $"    Girder: {GirderWeight:N0} lbs\n" +
-                   $"    Panel: {PanelWeight:N0} lbs\n" +
-                   $"    End Truck: {EndTruckWeight:N0} lbs\n" +
-                   $"    Total: {WeightBeam:N0} lbs";
+            return $"""
+                Beam Configuration Summary:
+                  Capacity: {RatedCapacity:N0} lbs
+                  Wheelbase: {WheelBase} ft, Support Centers: {SupportCenters} ft
+                  Bridge Span (distance between runway beams): {BridgeSpan:F1} ft
+                  Wheelbase/Support Ratio: {WheelbaseSpanRatio:F4}
+                  Impact Factor: {ImpactFactor:F3}
+                  Max Wheel Load: {MaxWheelLoad:F0} lbs
+                  Beam System: {(Capped ? "Capped" : "Uncapped")}
+                  Column Type: {(Freestanding ? "Freestanding" : "Braced")}
+                  Rail Height: {RailHeight} ft
+                  Hoist Speed: {(HoistSpeed > 0 ? $"{HoistSpeed} ft/min" : "Default")}
+                  Beam Weight Components:
+                    Girder: {GirderWeight:N0} lbs
+                    Panel: {PanelWeight:N0} lbs
+                    End Truck: {EndTruckWeight:N0} lbs
+                    Total: {WeightBeam:N0} lbs
+                """;
         }
 
         /// <summary>
@@ -254,65 +189,6 @@ namespace BeamSizing
             return $"BeamSizerConfig[Capacity={RatedCapacity:N0}, " +
                    $"Span={BridgeSpan}ft, " +
                    $"System={(Capped ? "Capped" : "Uncapped")}]";
-        }
-
-        /// <summary>
-        /// Implements equality comparison for configuration matching.
-        /// </summary>
-        public bool Equals(BeamSizerConfig other)
-        {
-            return RatedCapacity.Equals(other.RatedCapacity) &&
-                   WeightHoistTrolley.Equals(other.WeightHoistTrolley) &&
-                   GirderWeight.Equals(other.GirderWeight) &&
-                   PanelWeight.Equals(other.PanelWeight) &&
-                   EndTruckWeight.Equals(other.EndTruckWeight) &&
-                   WeightBeam.Equals(other.WeightBeam) &&
-                   NumCols == other.NumCols &&
-                   RailHeight.Equals(other.RailHeight) &&
-                   WheelBase.Equals(other.WheelBase) &&
-                   SupportCenters.Equals(other.SupportCenters) &&
-                   Freestanding == other.Freestanding &&
-                   Capped == other.Capped &&
-                   BridgeSpan.Equals(other.BridgeSpan) &&
-                   HoistSpeed.Equals(other.HoistSpeed);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is BeamSizerConfig other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            // Compatible with older .NET Framework versions
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + RatedCapacity.GetHashCode();
-                hash = hash * 23 + WeightHoistTrolley.GetHashCode();
-                hash = hash * 23 + GirderWeight.GetHashCode();
-                hash = hash * 23 + PanelWeight.GetHashCode();
-                hash = hash * 23 + EndTruckWeight.GetHashCode();
-                hash = hash * 23 + NumCols.GetHashCode();
-                hash = hash * 23 + RailHeight.GetHashCode();
-                hash = hash * 23 + WheelBase.GetHashCode();
-                hash = hash * 23 + SupportCenters.GetHashCode();
-                hash = hash * 23 + Freestanding.GetHashCode();
-                hash = hash * 23 + Capped.GetHashCode();
-                hash = hash * 23 + BridgeSpan.GetHashCode();
-                hash = hash * 23 + HoistSpeed.GetHashCode();
-                return hash;
-            }
-        }
-
-        public static bool operator ==(BeamSizerConfig left, BeamSizerConfig right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(BeamSizerConfig left, BeamSizerConfig right)
-        {
-            return !left.Equals(right);
         }
     }
 }

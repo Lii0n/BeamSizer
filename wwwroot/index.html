@@ -17,10 +17,11 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2c5530 0%, #1a3d1a 100%);
+            background: #2d3748;
             min-height: 100vh;
             color: #333;
-            padding: 15px;
+            padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
@@ -28,148 +29,270 @@
             margin: 0 auto;
         }
 
+        /* Header - Minimalist with blue accent */
         .header {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
+            color: #004085;
+            padding: 40px 30px;
+            margin-bottom: 30px;
             text-align: center;
-            border-left: 5px solid #4caf50;
+            border-bottom: 3px solid #0069d9;
         }
 
             .header h1 {
-                color: #2d5a2d;
-                font-size: 1.8rem;
-                margin-bottom: 8px;
+                font-size: 2.2rem;
+                font-weight: 200;
+                margin-bottom: 12px;
+                color: #004085;
+                letter-spacing: 1px;
             }
 
             .header .subtitle {
-                color: #666;
-                font-size: 0.9rem;
-                margin-bottom: 10px;
+                font-size: 0.95rem;
+                color: #6c757d;
+                font-weight: 300;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 15px;
             }
 
         .pi-badge {
             display: inline-block;
-            background: #4caf50;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
+            background: transparent;
+            color: #0069d9;
+            padding: 8px 0;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #0069d9;
         }
 
+        /* Main grid layout */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 1px;
+            margin-bottom: 1px;
         }
 
+        /* Cards - Minimalist approach */
         .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border: none;
+            border-radius: 0;
+            padding: 30px 25px;
+            border-bottom: 1px solid #e9ecef;
+            border-right: 1px solid #e9ecef;
         }
 
-            .card h2 {
-                color: #2d5a2d;
-                font-size: 1.2rem;
-                margin-bottom: 15px;
-                border-bottom: 2px solid #e8f5e8;
-                padding-bottom: 8px;
+            .card:nth-child(even) {
+                border-right: none;
             }
 
+            .card h2 {
+                color: #004085;
+                font-size: 1rem;
+                font-weight: 400;
+                margin-bottom: 25px;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                position: relative;
+            }
+
+                .card h2::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -8px;
+                    left: 0;
+                    width: 30px;
+                    height: 2px;
+                    background: #0069d9;
+                }
+
+        /* System Status Card */
+        .status-card {
+            grid-column: 1 / -1;
+            border-right: none;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            background: transparent;
+            padding: 0;
+            text-align: left;
+        }
+
+            .status-item .label {
+                font-size: 0.8rem;
+                color: #6c757d;
+                margin-bottom: 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-weight: 300;
+            }
+
+            .status-item .value {
+                font-weight: 500;
+                color: #004085;
+                font-size: 1rem;
+                border-bottom: 1px solid #dee2e6;
+                padding-bottom: 5px;
+            }
+
+        /* Form styling - Minimalist */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
+            gap: 20px;
         }
 
         .form-group {
-            display: flex;
-            flex-direction: column;
+            margin-bottom: 25px;
         }
 
             .form-group label {
-                font-weight: 600;
-                color: #4a5568;
-                margin-bottom: 4px;
+                display: block;
+                font-weight: 400;
+                color: #495057;
+                margin-bottom: 12px;
                 font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
             }
 
             .form-group input,
             .form-group select {
-                padding: 8px 10px;
-                border: 2px solid #e2e8f0;
-                border-radius: 6px;
-                font-size: 0.9rem;
-                transition: border-color 0.2s;
+                width: 100%;
+                padding: 15px 0;
+                border: none;
+                border-bottom: 1px solid #ced4da;
+                font-size: 0.95rem;
+                background: transparent;
+                color: #004085;
+                transition: border-color 0.3s ease;
+                font-weight: 300;
             }
 
                 .form-group input:focus,
                 .form-group select:focus {
                     outline: none;
-                    border-color: #4caf50;
+                    border-bottom-color: #0069d9;
+                    border-bottom-width: 2px;
                 }
 
+                .form-group input::placeholder {
+                    color: #adb5bd;
+                    font-style: italic;
+                }
+
+        /* Checkbox styling */
         .checkbox-group {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin: 4px 0;
+            gap: 12px;
+            margin: 15px 0;
         }
 
+            .checkbox-group input[type="checkbox"] {
+                width: auto;
+                margin: 0;
+                transform: scale(1.2);
+                accent-color: #0069d9;
+            }
+
+            .checkbox-group label {
+                margin: 0;
+                text-transform: none;
+                letter-spacing: normal;
+                font-weight: 300;
+            }
+
+        /* Buttons - Minimalist style */
         .buttons {
-            margin-top: 20px;
+            margin-top: 30px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: #4caf50;
+            background: #004085;
             color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 0;
+            font-size: 0.85rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            position: relative;
+            overflow: hidden;
         }
 
-            .btn-primary:hover {
-                background: #45a049;
+            .btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: #0069d9;
+                transition: left 0.3s ease;
+                z-index: 0;
             }
 
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
+            .btn:hover::before {
+                left: 0;
+            }
+
+            .btn span,
+            .btn {
+                position: relative;
+                z-index: 1;
+            }
+
+        .btn-primary {
+            background: #004085;
         }
 
+        .btn-secondary {
+            background: transparent;
+            color: #004085;
+            border: 1px solid #004085;
+        }
+
+            .btn-secondary::before {
+                background: #004085;
+            }
+
             .btn-secondary:hover {
-                background: #cbd5e0;
+                color: white;
             }
 
         .btn-export {
-            background: #059669;
-            color: white;
+            background: #495057;
         }
 
-            .btn-export:hover {
-                background: #047857;
+            .btn-export::before {
+                background: #6c757d;
             }
 
+        /* Loading and messages */
         .loading {
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
             display: none;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
         }
 
             .loading.show {
@@ -179,11 +302,11 @@
         .spinner {
             width: 40px;
             height: 40px;
-            border: 4px solid #e2e8f0;
-            border-top: 4px solid #4caf50;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #0069d9;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -197,46 +320,52 @@
         }
 
         .message {
-            padding: 12px;
-            border-radius: 6px;
-            margin: 10px 0;
+            padding: 20px;
+            margin: 20px 0;
             display: none;
+            border-left: 3px solid #0069d9;
+            background: white;
         }
 
             .message.error {
-                background: #fed7d7;
-                color: #c53030;
-                border: 1px solid #feb2b2;
+                background: white;
+                color: #721c24;
+                border-left-color: #dc3545;
                 display: block;
             }
 
             .message.success {
-                background: #c6f6d5;
-                color: #2f855a;
-                border: 1px solid #9ae6b4;
+                background: white;
+                color: #155724;
+                border-left-color: #28a745;
                 display: block;
             }
 
+        /* Results styling */
         .result-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
+            background: #ffffff;
+            border: none;
+            border-radius: 0;
+            padding: 25px;
+            margin: 1px 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
             .result-card h3 {
-                color: #2d5a2d;
+                color: #004085;
                 font-size: 1rem;
-                margin-bottom: 10px;
+                font-weight: 400;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
             }
 
         .result-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0;
+            border-bottom: 1px solid #2d3748;
         }
 
             .result-item:last-child {
@@ -244,83 +373,79 @@
             }
 
         .result-label {
-            font-weight: 600;
-            color: #4a5568;
+            font-weight: 300;
+            color: #6c757d;
             font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .result-value {
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 0.9rem;
+            font-weight: 500;
+            color: #004085;
+            font-size: 0.95rem;
         }
 
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+        }
+
+        /* Status indicators */
         .status-pass {
-            color: #2f855a;
-            background: #c6f6d5;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            color: #155724;
+            background: transparent;
+            padding: 3px 0;
+            font-size: 0.8rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #28a745;
         }
 
         .status-fail {
-            color: #c53030;
-            background: #fed7d7;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            color: #721c24;
+            background: transparent;
+            padding: 3px 0;
+            font-size: 0.8rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #dc3545;
         }
 
+        /* Performance indicator */
         .performance-indicator {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4caf50;
+            top: 30px;
+            right: 30px;
+            background: #004085;
             color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 12px 24px;
+            border-radius: 0;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 300;
             z-index: 1000;
             transform: translateX(100%);
-            transition: transform 0.3s;
+            transition: transform 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-left: 3px solid #0069d9;
         }
 
             .performance-indicator.show {
                 transform: translateX(0);
             }
 
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .status-item {
-            background: #f7fafc;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-            .status-item .label {
-                font-size: 0.75rem;
-                color: #718096;
-                margin-bottom: 4px;
-            }
-
-            .status-item .value {
-                font-weight: 600;
-                color: #2d3748;
-                font-size: 0.85rem;
-            }
-
+        /* Responsive design */
         @media (max-width: 768px) {
             .main-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .card {
+                border-right: none;
             }
 
             .form-grid {
@@ -330,6 +455,27 @@
             .buttons {
                 flex-direction: column;
             }
+
+            .status-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+                .header h1 {
+                    font-size: 1.8rem;
+                }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hidden by default */
+        #results {
+            display: none;
         }
     </style>
 </head>
@@ -339,14 +485,14 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🏗️ Beam Calculator</h1>
+            <h1>Beam Calculator</h1>
             <p class="subtitle">Professional beam sizing and analysis tool</p>
-            <span class="pi-badge">🖥️ Windows Edition</span>
+            <span class="pi-badge">Windows Edition</span>
         </div>
 
         <!-- System Status -->
-        <div class="card" style="margin-bottom: 15px;">
-            <h2>🖥️ System Status</h2>
+        <div class="card status-card" style="margin-bottom: 1px;">
+            <h2>System Status</h2>
             <div class="status-grid">
                 <div class="status-item">
                     <div class="label">Platform</div>
@@ -370,7 +516,7 @@
         <div class="main-grid">
             <!-- Input Panel -->
             <div class="card">
-                <h2>⚙️ Configuration</h2>
+                <h2>Configuration</h2>
 
                 <div class="form-grid">
                     <div class="form-group">
@@ -437,16 +583,16 @@
                 </div>
 
                 <div class="buttons">
-                    <button class="btn btn-secondary" onclick="validateConfig()">✓ Validate</button>
-                    <button class="btn btn-primary" onclick="analyze()">📊 Analyze</button>
-                    <button class="btn btn-secondary" onclick="clearCache()">🗑️ Clear Cache</button>
-                    <button class="btn btn-export" onclick="exportResults()">📋 Export to Excel</button>
+                    <button class="btn btn-secondary" onclick="validateConfig()">Validate</button>
+                    <button class="btn btn-primary" onclick="analyze()">Analyze</button>
+                    <button class="btn btn-secondary" onclick="clearCache()">Clear Cache</button>
+                    <button class="btn btn-export" onclick="exportResults()">Export to Excel</button>
                 </div>
             </div>
 
             <!-- Results Panel -->
             <div class="card">
-                <h2>📈 Results</h2>
+                <h2>Results</h2>
 
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
@@ -458,11 +604,11 @@
 
                 <div id="results" style="display: none;">
                     <!-- Calculated ECL Display -->
-                    <div class="result-card" style="margin-bottom: 15px; border-left: 4px solid #3b82f6;">
-                        <h3>🔢 Calculated Values</h3>
+                    <div class="result-card" style="margin-bottom: 15px; border-left: 4px solid #0069d9;">
+                        <h3>Calculated Values</h3>
                         <div class="result-item">
                             <span class="result-label">Required ECL:</span>
-                            <span class="result-value" id="calculatedECL" style="font-size: 1rem; color: #1e40af;">-</span>
+                            <span class="result-value" id="calculatedECL" style="font-size: 1rem; color: #004085;">-</span>
                         </div>
                         <div class="result-item">
                             <span class="result-label">K1 Factor:</span>
@@ -475,17 +621,17 @@
                     </div>
 
                     <!-- Top 5 Beam Candidates -->
-                    <div class="result-card" style="margin-bottom: 15px; border-left: 4px solid #8b5cf6;">
-                        <h3>🏗️ Top 5 Beam Candidates</h3>
+                    <div class="result-card" style="margin-bottom: 15px; border-left: 4px solid #6c757d;">
+                        <h3>Top 5 Beam Candidates</h3>
                         <div id="beamCandidatesTable">-</div>
                     </div>
 
                     <!-- Selected Beam Summary -->
-                    <div class="result-card" style="margin-bottom: 15px; border-left: 4px solid #4caf50;">
-                        <h3>✅ Selected Beam Analysis</h3>
+                    <div class="result-card" style="margin-bottom: 15px; border-left: 4px solid #28a745;">
+                        <h3>Selected Beam Analysis</h3>
                         <div class="result-item">
                             <span class="result-label">Designation:</span>
-                            <span class="result-value" id="beamDesignation" style="font-size: 1rem; color: #2e7d32;">-</span>
+                            <span class="result-value" id="beamDesignation" style="font-size: 1rem; color: #155724;">-</span>
                         </div>
                         <div class="result-item">
                             <span class="result-label">Weight:</span>
@@ -501,9 +647,9 @@
                         </div>
                     </div>
 
-                    <div class="result-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="result-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px;">
                         <div class="result-card">
-                            <h3>⚖️ Load Analysis</h3>
+                            <h3>Load Analysis</h3>
                             <div class="result-item">
                                 <span class="result-label">Max Wheel Load:</span>
                                 <span class="result-value" id="maxWheelLoad">-</span>
@@ -523,7 +669,7 @@
                         </div>
 
                         <div class="result-card">
-                            <h3>✓ Structural Checks</h3>
+                            <h3>Structural Checks</h3>
                             <div class="result-item">
                                 <span class="result-label">Lateral Check:</span>
                                 <span class="result-value" id="lateralCheck">-</span>
@@ -543,7 +689,7 @@
                         </div>
 
                         <div class="result-card">
-                            <h3>🏗️ Foundation Loads</h3>
+                            <h3>Foundation Loads</h3>
                             <div class="result-item">
                                 <span class="result-label">Column Load:</span>
                                 <span class="result-value" id="columnLoad">-</span>

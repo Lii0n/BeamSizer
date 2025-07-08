@@ -32,65 +32,6 @@ namespace BeamSizing
         public static Dictionary<(string beam, int span), int> UncappedCapacities => _uncappedCapacityLookup.Value;
         public static Dictionary<(string beam, int span), int> CappedCapacities => _cappedCapacityLookup.Value;
 
-        /// <summary>
-        /// Get beam properties by designation
-        /// </summary>
-        /// <param name="designation">Beam designation (e.g., "W12x40")</param>
-        /// <param name="capped">Whether to search capped or uncapped beams</param>
-        /// <returns>BeamProperties if found, null otherwise</returns>
-        public static BeamProperties? GetBeam(string designation, bool capped = false)
-        {
-            if (string.IsNullOrEmpty(designation))
-            {
-                Console.WriteLine("WARNING: Null or empty beam designation provided to GetBeam");
-                return null;
-            }
-
-            var lookup = capped ? CappedBeams : UncappedBeams;
-            return lookup.TryGetValue(designation, out var beam) ? beam : null;
-        }
-
-        /// <summary>
-        /// Get all beams within a weight range
-        /// </summary>
-        /// <param name="minWeight">Minimum weight in lbs/ft</param>
-        /// <param name="maxWeight">Maximum weight in lbs/ft</param>
-        /// <param name="capped">Whether to search capped or uncapped beams</param>
-        /// <returns>List of beams within the weight range, sorted by weight</returns>
-        public static List<BeamProperties> GetBeamsInWeightRange(double minWeight, double maxWeight, bool capped = false)
-        {
-            var beams = capped ? CappedBeams.Values : UncappedBeams.Values;
-            return beams.Where(b => b.Weight >= minWeight && b.Weight <= maxWeight)
-                       .OrderBy(b => b.Weight)
-                       .ToList();
-        }
-
-        /// <summary>
-        /// Get all beams of a specific depth series (e.g., all W12 beams)
-        /// </summary>
-        /// <param name="depthSeries">Depth series (e.g., "W12")</param>
-        /// <param name="capped">Whether to search capped or uncapped beams</param>
-        /// <returns>List of beams in the depth series, sorted by weight</returns>
-        public static List<BeamProperties> GetBeamsByDepthSeries(string depthSeries, bool capped = false)
-        {
-            var beams = capped ? CappedBeams.Values : UncappedBeams.Values;
-            return beams.Where(b => b.Designation.StartsWith(depthSeries, StringComparison.OrdinalIgnoreCase))
-                       .OrderBy(b => b.Weight)
-                       .ToList();
-        }
-
-        /// <summary>
-        /// Get load capacity for a specific beam and span
-        /// </summary>
-        /// <param name="beamDesignation">Beam designation</param>
-        /// <param name="spanLength">Span length in feet</param>
-        /// <param name="capped">Whether to use capped or uncapped capacity tables</param>
-        /// <returns>Load capacity in pounds, or 0 if not found</returns>
-        public static int GetLoadCapacity(string beamDesignation, int spanLength, bool capped = false)
-        {
-            var lookup = capped ? CappedCapacities : UncappedCapacities;
-            return lookup.TryGetValue((beamDesignation, spanLength), out var capacity) ? capacity : 0;
-        }
 
         /// <summary>
         /// Get interpolated load capacity for a specific beam and span, handling odd-length spans
@@ -346,43 +287,7 @@ namespace BeamSizing
             }
         }
 
-        /// <summary>
-        /// DEBUGGING METHOD: Test ECL calculations for verification
-        /// </summary>
-        public static void TestECLCalculations(double ratedCapacity, double weightHoistTrolley, double weightBeam, double impactFactor)
-        {
-            Console.WriteLine("=== ECL CALCULATION TEST ===");
-            Console.WriteLine($"Input Parameters:");
-            Console.WriteLine($"  Rated Capacity: {ratedCapacity:F0} lbs");
-            Console.WriteLine($"  Hoist/Trolley Weight: {weightHoistTrolley:F0} lbs");
-            Console.WriteLine($"  Beam Weight: {weightBeam:F0} lbs");
-            Console.WriteLine($"  Impact Factor: {impactFactor:F3}");
 
-            // Calculate wheel loads step by step
-            double impactLoad = impactFactor * ratedCapacity;
-            double halfImpactLoad = impactLoad / 2.0;
-            double halfHoistTrolley = weightHoistTrolley / 2.0;
-            double quarterBeam = weightBeam / 4.0;
-
-            double maxWheelLoad = halfImpactLoad + halfHoistTrolley + quarterBeam;
-
-            Console.WriteLine($"Calculation Steps:");
-            Console.WriteLine($"  Impact Load = {impactFactor:F3} × {ratedCapacity:F0} = {impactLoad:F0} lbs");
-            Console.WriteLine($"  Half Impact Load = {impactLoad:F0} ÷ 2 = {halfImpactLoad:F0} lbs");
-            Console.WriteLine($"  Half Hoist/Trolley = {weightHoistTrolley:F0} ÷ 2 = {halfHoistTrolley:F0} lbs");
-            Console.WriteLine($"  Quarter Beam = {weightBeam:F0} ÷ 4 = {quarterBeam:F0} lbs");
-            Console.WriteLine($"  Max Wheel Load = {halfImpactLoad:F0} + {halfHoistTrolley:F0} + {quarterBeam:F0} = {maxWheelLoad:F0} lbs");
-
-            // Test with different K1 values
-            double[] testK1Values = { 1.0, 1.125, 1.25, 1.5, 2.0 };
-            Console.WriteLine($"ECL Values for different K1 factors:");
-            foreach (double k1 in testK1Values)
-            {
-                double ecl = k1 * maxWheelLoad;
-                Console.WriteLine($"  K1 = {k1:F3} → ECL = {k1:F3} × {maxWheelLoad:F0} = {ecl:F0} lbs");
-            }
-            Console.WriteLine("=== END TEST ===\n");
-        }
 
         private static Dictionary<(string, int), int> BuildUncappedCapacityLookup()
         {
@@ -416,46 +321,6 @@ namespace BeamSizing
 
             Console.WriteLine($"Built capped capacity lookup with {lookup.Count} entries");
             return lookup;
-        }
-
-        /// <summary>
-        /// Validates that all required data is loaded
-        /// </summary>
-        /// <returns>True if all data is loaded successfully</returns>
-        public static bool ValidateDataIntegrity()
-        {
-            try
-            {
-                var uncappedCount = UncappedBeams.Count;
-                var cappedCount = CappedBeams.Count;
-                var uncappedCapacityCount = UncappedCapacities.Count;
-                var cappedCapacityCount = CappedCapacities.Count;
-
-                Console.WriteLine($"Data loaded successfully:");
-                Console.WriteLine($"  Uncapped beams: {uncappedCount}");
-                Console.WriteLine($"  Capped beams: {cappedCount}");
-                Console.WriteLine($"  Uncapped capacities: {uncappedCapacityCount}");
-                Console.WriteLine($"  Capped capacities: {cappedCapacityCount}");
-
-                // Test a few key beams
-                var testBeams = new[] { "W12x40", "W14x43", "W16x36" };
-                var testSpan = 20.0;
-
-                Console.WriteLine($"\nTest interpolation for span {testSpan} ft:");
-                foreach (var beam in testBeams)
-                {
-                    var uncappedCap = GetInterpolatedLoadCapacity(beam, testSpan, false);
-                    var cappedCap = GetInterpolatedLoadCapacity(beam, testSpan, true);
-                    Console.WriteLine($"  {beam}: Uncapped = {uncappedCap:F0} lbs, Capped = {cappedCap:F0} lbs");
-                }
-
-                return uncappedCount > 0 && uncappedCapacityCount > 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Data validation failed: {ex.Message}");
-                return false;
-            }
         }
     }
 }
