@@ -1,5 +1,5 @@
-﻿// BeamCalculator.cs - Cleaned up version with only used functions
-// Removed all unused functions while preserving core functionality
+﻿// BeamCalculator.cs - Refactored version with duplicate calculations removed
+// All user-input-dependent calculations moved to BeamSizerConfig
 
 using System;
 using System.Collections.Generic;
@@ -62,113 +62,44 @@ namespace BeamSizing
         }
 
         /// <summary>
-        /// Calculate runway beam weight.
-        /// </summary>
-        public static double CalculateRunwayBeamWeight(BeamSizerConfig config, BeamProperties beam)
-        {
-            if (beam == null)
-                throw new ArgumentNullException(nameof(beam), "Beam cannot be null");
-
-            return beam.Weight * config.BridgeSpan;
-        }
-
-        /// <summary>
-        /// Calculate lateral load (20% of crane capacity + hoist/trolley weight).
-        /// </summary>
-        public static double CalculateLateralLoad(BeamSizerConfig config)
-        {
-            return 0.2 * (config.RatedCapacity + config.WeightHoistTrolley);
-        }
-
-        /// <summary>
-        /// Calculate longitudinal load (10% of max wheel load).
-        /// </summary>
-        public static double CalculateLongitudinalLoad(BeamSizerConfig config)
-        {
-            return 0.1 * config.MaxWheelLoad;
-        }
-
-        /// <summary>
-        /// Calculate column moment from lateral load.
-        /// </summary>
-        public static double CalculateColumnMoment(BeamSizerConfig config, double lateralLoad)
-        {
-            double railHeightInches = config.RailHeight * 12.0;
-            return railHeightInches * lateralLoad;
-        }
-
-        /// <summary>
-        /// Calculate foundation moment from longitudinal load.
-        /// </summary>
-        public static double CalculateFoundationMoment(BeamSizerConfig config, double longitudinalLoad)
-        {
-            double railHeightInches = config.RailHeight * 12.0;
-            return railHeightInches * longitudinalLoad;
-        }
-
-        /// <summary>
-        /// Convert moment to overturning moment in kip-ft.
-        /// </summary>
-        public static double ConvertToOTM(double momentLbIn)
-        {
-            return momentLbIn / (1000.0 * 12.0);
-        }
-
-        /// <summary>
-        /// Calculate maximum vertical load on runway system.
-        /// </summary>
-        public static double CalculateMaxVerticalLoad(BeamSizerConfig config, double runwayBeamWeight)
-        {
-            return config.RatedCapacity + config.WeightBeam + config.WeightHoistTrolley + runwayBeamWeight;
-        }
-
-        /// <summary>
-        /// Calculate column load on foundation.
-        /// </summary>
-        public static double CalculateColumnLoadFoundation(double maxVerticalLoad)
-        {
-            return (maxVerticalLoad + 2500) / 1000.0; // Convert to kips with safety factor
-        }
-
-        /// <summary>
         /// Check lateral deflection limit (L/450).
+        /// Uses pre-calculated values from config where possible.
         /// </summary>
-        public static bool CheckLateralDeflection(BeamSizerConfig config, BeamProperties beam, double lateralLoad)
+        public static bool CheckLateralDeflection(BeamSizerConfig config, BeamProperties beam)
         {
             if (beam == null) return false;
 
-            double railHeightInches = config.RailHeight * 12.0;
-            double beamDeflection = (lateralLoad * Math.Pow(railHeightInches, 3)) /
+            double beamDeflection = (config.LateralLoad * Math.Pow(config.RailHeightInches, 3)) /
                                    (3.0 * 29000000.0 * beam.I);
-            double allowableDeflection = railHeightInches / 450.0;
+            double allowableDeflection = config.RailHeightInches / 450.0;
 
             return beamDeflection < allowableDeflection;
         }
 
         /// <summary>
         /// Check longitudinal deflection limit (L/500).
+        /// Uses pre-calculated values from config where possible.
         /// </summary>
-        public static bool CheckLongitudinalDeflection(BeamSizerConfig config, BeamProperties beam, double longitudinalLoad)
+        public static bool CheckLongitudinalDeflection(BeamSizerConfig config, BeamProperties beam)
         {
             if (beam == null) return false;
 
-            double railHeightInches = config.RailHeight * 12.0;
-            double beamDeflection = (longitudinalLoad * Math.Pow(railHeightInches, 3)) /
+            double beamDeflection = (config.LongitudinalLoad * Math.Pow(config.RailHeightInches, 3)) /
                                    (3.0 * 29000000.0 * beam.I);
-            double allowableDeflection = railHeightInches / 500.0;
+            double allowableDeflection = config.RailHeightInches / 500.0;
 
             return beamDeflection < allowableDeflection;
         }
 
         /// <summary>
         /// Check bending stress limit (24,000 psi).
+        /// Uses pre-calculated values from config where possible.
         /// </summary>
-        public static bool CheckBendingStress(BeamSizerConfig config, BeamProperties beam, double lateralLoad)
+        public static bool CheckBendingStress(BeamSizerConfig config, BeamProperties beam)
         {
             if (beam == null) return false;
 
-            double railHeightInches = config.RailHeight * 12.0;
-            double beamStress = (lateralLoad * railHeightInches) / beam.S;
+            double beamStress = (config.LateralLoad * config.RailHeightInches) / beam.S;
             double allowableStress = 24000;
 
             return beamStress < allowableStress;
@@ -176,14 +107,12 @@ namespace BeamSizing
 
         /// <summary>
         /// Check axial unity check.
+        /// Uses pre-calculated values from config where possible.
         /// </summary>
         public static bool CheckAxialUnity(BeamSizerConfig config, double axialLoad)
         {
-            double effectiveLengthFactor = config.Freestanding ? 2.0 : 0.5;
-            double effectiveLength = config.RailHeight * effectiveLengthFactor;
-
             // Unity check: fa/Fa + fe/Fe < 1.0
-            double unityRatio = (axialLoad / 24000.0) + (effectiveLength / 43.2);
+            double unityRatio = (axialLoad / 24000.0) + (config.EffectiveLength / 43.2);
             Console.WriteLine($"DEBUG: Unity ratio is {unityRatio:F3}");
             return unityRatio < 1.0;
         }
@@ -191,6 +120,7 @@ namespace BeamSizing
         /// <summary>
         /// Perform complete beam sizing analysis using pure functions.
         /// MAIN ENTRY POINT - Called by BeamSizerService.PerformAnalysis()
+        /// Now uses pre-calculated values from config to eliminate duplication.
         /// </summary>
         public static BeamSizingResults PerformFullAnalysis(BeamSizerConfig config)
         {
@@ -220,26 +150,26 @@ namespace BeamSizing
                 results.SelectedBeam = selectedBeam;
                 results.TopBeamCandidates = topCandidates;
 
-                // Step 3: Calculate loads
+                // Step 3: Calculate loads (using pre-calculated values from config)
                 results.MaxWheelLoad = config.MaxWheelLoad;
-                results.RunwayBeamWeight = CalculateRunwayBeamWeight(config, selectedBeam);
-                results.LateralLoad = CalculateLateralLoad(config);
-                results.LongitudinalLoad = CalculateLongitudinalLoad(config);
+                results.RunwayBeamWeight = config.CalculateRunwayBeamWeight(selectedBeam);
+                results.LateralLoad = config.LateralLoad;
+                results.LongitudinalLoad = config.LongitudinalLoad;
 
-                // Step 4: Calculate moments
-                results.ColumnMoment = CalculateColumnMoment(config, results.LateralLoad);
-                results.FoundationMoment = CalculateFoundationMoment(config, results.LongitudinalLoad);
-                results.LateralOTM = ConvertToOTM(results.ColumnMoment);
-                results.LongitudinalOTM = ConvertToOTM(results.FoundationMoment);
+                // Step 4: Calculate moments (using config methods)
+                results.ColumnMoment = config.CalculateColumnMoment();
+                results.FoundationMoment = config.CalculateFoundationMoment();
+                results.LateralOTM = BeamSizerConfig.ConvertToOTM(results.ColumnMoment);
+                results.LongitudinalOTM = BeamSizerConfig.ConvertToOTM(results.FoundationMoment);
 
-                // Step 5: Calculate foundation loads
-                results.MaxVerticalLoad = CalculateMaxVerticalLoad(config, results.RunwayBeamWeight);
-                results.ColumnLoadFoundation = CalculateColumnLoadFoundation(results.MaxVerticalLoad);
+                // Step 5: Calculate foundation loads (using config methods)
+                results.MaxVerticalLoad = config.CalculateMaxVerticalLoad(results.RunwayBeamWeight);
+                results.ColumnLoadFoundation = BeamSizerConfig.CalculateColumnLoadFoundation(results.MaxVerticalLoad);
 
-                // Step 6: Perform structural checks
-                results.LateralDeflectionPass = CheckLateralDeflection(config, selectedBeam, results.LateralLoad);
-                results.LongitudinalDeflectionPass = CheckLongitudinalDeflection(config, selectedBeam, results.LongitudinalLoad);
-                results.StressCheckPass = CheckBendingStress(config, selectedBeam, results.LateralLoad);
+                // Step 6: Perform structural checks (simplified with pre-calculated values)
+                results.LateralDeflectionPass = CheckLateralDeflection(config, selectedBeam);
+                results.LongitudinalDeflectionPass = CheckLongitudinalDeflection(config, selectedBeam);
+                results.StressCheckPass = CheckBendingStress(config, selectedBeam);
                 results.AxialCheckPass = CheckAxialUnity(config, results.MaxVerticalLoad);
 
                 // Step 7: Set overall result

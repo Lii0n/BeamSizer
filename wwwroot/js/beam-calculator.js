@@ -504,13 +504,6 @@ async function getBeamOptions() {
     }
 }
 
-/**
- * Calculate max wheel load from configuration
- */
-function calculateMaxWheelLoad(config) {
-    const totalWeight = (config.ratedCapacity / 2) + (config.weightHoistTrolley / 2) + ((config.girderWeight + config.panelWeight + config.endTruckWeight) / 2);
-    return totalWeight;
-}
 
 /**
  * Get K-factors for the configuration

@@ -1,5 +1,5 @@
-﻿// BeamSizerConfig.cs - Cleaned up version with only used functionality
-// Removed unused methods while keeping core immutable configuration
+﻿// BeamSizerConfig.cs - Enhanced version with all user-input-dependent calculations
+// Moved duplicate calculations from BeamCalculator to eliminate redundancy
 
 using System;
 
@@ -7,7 +7,7 @@ namespace BeamSizing
 {
     /// <summary>
     /// Immutable configuration struct for Beam sizing parameters.
-    /// Optimized for server environments with multiple concurrent users.
+    /// Now includes all calculations that depend only on user input to eliminate duplication.
     /// </summary>
     public readonly struct BeamSizerConfig
     {
@@ -35,9 +35,16 @@ namespace BeamSizing
         public double MaxWheelLoad { get; }
         public double WheelbaseSpanRatio { get; }
 
+        // NEW: Pre-calculated loads that depend only on user input
+        public double LateralLoad { get; }          // 20% of (crane capacity + hoist/trolley weight)
+        public double LongitudinalLoad { get; }     // 10% of max wheel load
+        public double RailHeightInches { get; }     // Rail height converted to inches
+        public double EffectiveLengthFactor { get; } // Factor for freestanding vs braced columns
+        public double EffectiveLength { get; }      // Rail height * effective length factor
+
         /// <summary>
         /// Creates a new immutable Beam sizing configuration.
-        /// All validation occurs during construction.
+        /// All validation and calculations occur during construction.
         /// </summary>
         public BeamSizerConfig(
             double ratedCapacity,
@@ -84,8 +91,54 @@ namespace BeamSizing
                           (weightHoistTrolley / 2.0) +
                           (weightBeam / 4.0);
 
+            // NEW: Calculate loads that depend only on user input
+            LateralLoad = 0.2 * (ratedCapacity + weightHoistTrolley);
+            LongitudinalLoad = 0.1 * MaxWheelLoad;
+            RailHeightInches = railHeight * 12.0;
+            EffectiveLengthFactor = freestanding ? 2.0 : 0.5;
+            EffectiveLength = railHeight * EffectiveLengthFactor;
+
             Console.WriteLine($"DEBUG: Created config with BridgeSpan={BridgeSpan:F1} ft, SupportCenters={SupportCenters:F1} ft");
+            Console.WriteLine($"DEBUG: Pre-calculated LateralLoad={LateralLoad:F0} lbs, LongitudinalLoad={LongitudinalLoad:F0} lbs");
         }
+
+        /// <summary>
+        /// Calculate column moment from lateral load (depends only on config values)
+        /// </summary>
+        public double CalculateColumnMoment() => RailHeightInches * LateralLoad;
+
+        /// <summary>
+        /// Calculate foundation moment from longitudinal load (depends only on config values)
+        /// </summary>
+        public double CalculateFoundationMoment() => RailHeightInches * LongitudinalLoad;
+
+        /// <summary>
+        /// Calculate runway beam weight for a given beam (depends on config + beam)
+        /// </summary>
+        public double CalculateRunwayBeamWeight(BeamProperties beam)
+        {
+            if (beam == null)
+                throw new ArgumentNullException(nameof(beam), "Beam cannot be null");
+            return beam.Weight * BridgeSpan;
+        }
+
+        /// <summary>
+        /// Calculate maximum vertical load on runway system (depends on config + runway beam weight)
+        /// </summary>
+        public double CalculateMaxVerticalLoad(double runwayBeamWeight) =>
+            RatedCapacity + WeightBeam + WeightHoistTrolley + runwayBeamWeight;
+
+        /// <summary>
+        /// Calculate column load on foundation (static calculation)
+        /// </summary>
+        public static double CalculateColumnLoadFoundation(double maxVerticalLoad) =>
+            (maxVerticalLoad + 2500) / 1000.0; // Convert to kips with safety factor
+
+        /// <summary>
+        /// Convert moment to overturning moment in kip-ft (static calculation)
+        /// </summary>
+        public static double ConvertToOTM(double momentLbIn) =>
+            momentLbIn / (1000.0 * 12.0);
 
         /// <summary>
         /// Validates all input parameters and throws descriptive exceptions for invalid values.
@@ -168,9 +221,12 @@ namespace BeamSizing
                   Wheelbase/Support Ratio: {WheelbaseSpanRatio:F4}
                   Impact Factor: {ImpactFactor:F3}
                   Max Wheel Load: {MaxWheelLoad:F0} lbs
+                  Lateral Load: {LateralLoad:F0} lbs
+                  Longitudinal Load: {LongitudinalLoad:F0} lbs
+                  Rail Height: {RailHeight} ft ({RailHeightInches} in)
+                  Effective Length: {EffectiveLength:F1} ft (Factor: {EffectiveLengthFactor})
                   Beam System: {(Capped ? "Capped" : "Uncapped")}
                   Column Type: {(Freestanding ? "Freestanding" : "Braced")}
-                  Rail Height: {RailHeight} ft
                   Hoist Speed: {(HoistSpeed > 0 ? $"{HoistSpeed} ft/min" : "Default")}
                   Beam Weight Components:
                     Girder: {GirderWeight:N0} lbs
