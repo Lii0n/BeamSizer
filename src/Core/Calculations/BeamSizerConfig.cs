@@ -165,7 +165,6 @@ namespace BeamSizing
                 Beam Configuration Summary:
                   Capacity: {RatedCapacity:N0} lbs
                   Wheelbase: {WheelBase} ft, Support Centers: {SupportCenters} ft
-                  Bridge Span (distance between runway beams): {BridgeSpan:F1} ft
                   Wheelbase/Support Ratio: {WheelbaseSpanRatio:F4}
                   Impact Factor: {ImpactFactor:F3}
                   Max Wheel Load: {MaxWheelLoad:F0} lbs
@@ -187,7 +186,7 @@ namespace BeamSizing
         public override string ToString()
         {
             return $"BeamSizerConfig[Capacity={RatedCapacity:N0}, " +
-                   $"Span={BridgeSpan}ft, " +
+                   $"Span={SupportCenters}ft, " +
                    $"System={(Capped ? "Capped" : "Uncapped")}]";
         }
     }
