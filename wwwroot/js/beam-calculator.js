@@ -504,7 +504,6 @@ async function getBeamOptions() {
     }
 }
 
-
 /**
  * Get K-factors for the configuration
  */
