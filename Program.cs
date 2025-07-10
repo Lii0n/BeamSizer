@@ -48,6 +48,19 @@ Console.WriteLine($"🌐 Network access: http://{localIP}:5265/");
 Console.WriteLine($"🔒 HTTPS: https://{localIP}:7089/");
 Console.WriteLine("📋 Share the network URL with your team!");
 
+// ADD THESE LINES HERE ⬇️
+Console.WriteLine("🔧 Initializing optimized beam search...");
+try
+{
+    BeamSizing.DataLoader.PrintPerformanceStats();
+    Console.WriteLine("✅ Beam optimization ready!");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠️ Warning: Could not initialize beam optimization: {ex.Message}");
+}
+// ADD THESE LINES HERE ⬆️
+
 app.Run();
 
 // Helper method to get local IP address

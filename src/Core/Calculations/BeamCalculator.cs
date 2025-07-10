@@ -30,6 +30,7 @@ namespace BeamSizing
 
             // Get top candidates - this is the SINGLE call that does all the work
             var topBeams = DataLoader.FindTopAdequateBeams(ECL, bridgeSpan, config.Capped, 5);
+
             var selectedBeam = topBeams.FirstOrDefault();
 
             if (selectedBeam == null)
