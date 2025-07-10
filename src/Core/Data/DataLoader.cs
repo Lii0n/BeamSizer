@@ -346,11 +346,6 @@ namespace BeamSizing
 
         #region Performance Monitoring
 
-        public static void ClearCache()
-        {
-            _interpolationCache.Clear();
-            Console.WriteLine("Interpolation cache cleared");
-        }
 
         public static void PrintPerformanceStats()
         {

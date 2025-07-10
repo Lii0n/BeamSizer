@@ -90,30 +90,6 @@ namespace BeamCalculator.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Clear cache
-        /// USED BY: Frontend cache management
-        /// </summary>
-        [HttpPost("clear-cache")]
-        public ActionResult<object> ClearCache()
-        {
-            try
-            {
-                GC.Collect(); // Force garbage collection as a simple "cache clear"
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Cache cleared successfully",
-                    timestamp = DateTime.UtcNow
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error clearing cache");
-                return StatusCode(500, new { error = "Failed to clear cache", details = ex.Message });
-            }
-        }
 
         /// <summary>
         /// Get K-factors for a given wheelbase to span ratio
